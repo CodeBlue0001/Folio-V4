@@ -1,0 +1,19 @@
+﻿services:
+  # Express backend — Live Viewer Location API
+  - type: web
+    name: folio-v4-api
+    env: node
+    region: oregon
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/index.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+
+  # Static frontend — built by Vite
+  # Deploy the "dist/" folder after running "npm run build" locally
+  # OR connect to Vercel directly (see DEPLOYMENT.md)
+

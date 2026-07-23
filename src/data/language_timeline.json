@@ -1,0 +1,486 @@
+{
+  "username": "CodeBlue0001",
+  "years": [
+    "2023",
+    "2024",
+    "2025",
+    "2026"
+  ],
+  "months": [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec"
+  ],
+  "languageColors": {
+    "TypeScript": "#3178c6",
+    "JavaScript": "#f7df1e",
+    "Python": "#3776ab",
+    "HTML": "#e34f26",
+    "CSS": "#1572b6",
+    "C": "#a8b9cc",
+    "EJS": "#b4ca65",
+    "Jupyter Notebook": "#f37626",
+    "PowerShell": "#53a5df",
+    "Batchfile": "#10b981",
+    "Dockerfile": "#0db7ed"
+  },
+  "languageTotals": {
+    "JavaScript": 138655,
+    "HTML": 132917,
+    "CSS": 271055,
+    "Jupyter Notebook": 2204739,
+    "Python": 101086,
+    "C": 4674,
+    "EJS": 93737,
+    "Dockerfile": 549,
+    "TypeScript": 585466,
+    "PowerShell": 4106,
+    "Batchfile": 3398,
+    "Hack": 2161
+  },
+  "monthlyStats": {
+    "2023": {
+      "Sep": {}
+    },
+    "2024": {
+      "May": {
+        "C": 4674
+      },
+      "Oct": {
+        "Python": 6992,
+        "HTML": 6361
+      },
+      "Aug": {}
+    },
+    "2025": {
+      "Jun": {
+        "TypeScript": 585466,
+        "JavaScript": 30488,
+        "CSS": 11065,
+        "PowerShell": 4106,
+        "Batchfile": 3398,
+        "HTML": 12226,
+        "Python": 15459,
+        "EJS": 16085,
+        "Hack": 2161
+      },
+      "Dec": {
+        "Python": 16176
+      },
+      "May": {
+        "CSS": 229251,
+        "EJS": 50043,
+        "JavaScript": 12277,
+        "HTML": 4768
+      },
+      "Nov": {
+        "JavaScript": 8275,
+        "HTML": 6150,
+        "CSS": 2918,
+        "Python": 821
+      },
+      "Aug": {
+        "HTML": 60598,
+        "CSS": 8329
+      }
+    },
+    "2026": {
+      "Jul": {
+        "JavaScript": 42887,
+        "HTML": 2254,
+        "CSS": 989,
+        "Jupyter Notebook": 777075,
+        "Python": 8662
+      },
+      "May": {
+        "Jupyter Notebook": 355495
+      },
+      "Mar": {
+        "EJS": 18771,
+        "JavaScript": 36488,
+        "CSS": 16572,
+        "Jupyter Notebook": 1072169,
+        "Python": 52976,
+        "HTML": 3126,
+        "Dockerfile": 549
+      },
+      "Apr": {
+        "HTML": 37434,
+        "EJS": 8838,
+        "JavaScript": 8240,
+        "CSS": 1931
+      }
+    }
+  },
+  "repos": [
+    {
+      "repoName": "LeetCode-DSA-practices",
+      "description": "This repo contains my DSA tests and leetcode solving sheets, and all my random practices.",
+      "url": "https://github.com/CodeBlue0001/LeetCode-DSA-practices",
+      "primaryLanguage": "Python",
+      "year": "2026",
+      "month": "Jul",
+      "pushedAt": "2026-07-22T03:25:47Z",
+      "stars": 0,
+      "languages": {
+        "Python": 8662,
+        "Jupyter Notebook": 5602
+      }
+    },
+    {
+      "repoName": "NLP",
+      "description": "This repo will contains all about the my learnings and projects on NLP ",
+      "url": "https://github.com/CodeBlue0001/NLP",
+      "primaryLanguage": "Jupyter Notebook",
+      "year": "2026",
+      "month": "Jul",
+      "pushedAt": "2026-07-15T15:54:07Z",
+      "stars": 0,
+      "languages": {
+        "Jupyter Notebook": 5077
+      }
+    },
+    {
+      "repoName": "BCT-Training-Gen-AI",
+      "description": "This repo will contain only the bct training files and programs and projects on gen ai .",
+      "url": "https://github.com/CodeBlue0001/BCT-Training-Gen-AI",
+      "primaryLanguage": "Jupyter Notebook",
+      "year": "2026",
+      "month": "Jul",
+      "pushedAt": "2026-07-06T08:44:16Z",
+      "stars": 0,
+      "languages": {
+        "Jupyter Notebook": 285874
+      }
+    },
+    {
+      "repoName": "ML-Linear_regresion",
+      "description": "Machine Learning practice ",
+      "url": "https://github.com/CodeBlue0001/ML-Linear_regresion",
+      "primaryLanguage": "Jupyter Notebook",
+      "year": "2026",
+      "month": "Jul",
+      "pushedAt": "2026-07-03T08:44:21Z",
+      "stars": 0,
+      "languages": {
+        "Jupyter Notebook": 479605
+      }
+    },
+    {
+      "repoName": "ADmyBRAND",
+      "description": " ADmyBRAND internship Task 1",
+      "url": "https://github.com/CodeBlue0001/ADmyBRAND",
+      "primaryLanguage": "JavaScript",
+      "year": "2026",
+      "month": "Jul",
+      "pushedAt": "2026-07-02T04:59:13Z",
+      "stars": 0,
+      "languages": {
+        "JavaScript": 42887,
+        "HTML": 2254,
+        "CSS": 989,
+        "Jupyter Notebook": 917
+      }
+    },
+    {
+      "repoName": "Agrimind",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/Agrimind",
+      "primaryLanguage": "Jupyter Notebook",
+      "year": "2026",
+      "month": "May",
+      "pushedAt": "2026-05-05T04:11:10Z",
+      "stars": 0,
+      "languages": {
+        "Jupyter Notebook": 355495
+      }
+    },
+    {
+      "repoName": "Election_Website",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/Election_Website",
+      "primaryLanguage": "HTML",
+      "year": "2026",
+      "month": "Apr",
+      "pushedAt": "2026-04-27T15:10:17Z",
+      "stars": 0,
+      "languages": {
+        "HTML": 37434,
+        "EJS": 8838,
+        "JavaScript": 8240,
+        "CSS": 1931
+      }
+    },
+    {
+      "repoName": "deepguard",
+      "description": "A web browser extension that detect deepfakes from the live or videos playing on the website.",
+      "url": "https://github.com/CodeBlue0001/deepguard",
+      "primaryLanguage": "Python",
+      "year": "2026",
+      "month": "Mar",
+      "pushedAt": "2026-03-28T19:00:52Z",
+      "stars": 0,
+      "languages": {
+        "Python": 52976,
+        "JavaScript": 23192,
+        "CSS": 8414,
+        "HTML": 3126,
+        "Dockerfile": 549
+      }
+    },
+    {
+      "repoName": "data-analysis-Training",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/data-analysis-Training",
+      "primaryLanguage": "Jupyter Notebook",
+      "year": "2026",
+      "month": "Mar",
+      "pushedAt": "2026-03-19T19:00:17Z",
+      "stars": 0,
+      "languages": {
+        "Jupyter Notebook": 1072169
+      }
+    },
+    {
+      "repoName": "Cloude-Kitchen",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/Cloude-Kitchen",
+      "primaryLanguage": "EJS",
+      "year": "2026",
+      "month": "Mar",
+      "pushedAt": "2026-03-12T14:53:39Z",
+      "stars": 0,
+      "languages": {
+        "EJS": 18771,
+        "JavaScript": 13296,
+        "CSS": 8158
+      }
+    },
+    {
+      "repoName": "BIOMETRIC-VOTING-SYSTEM--COMPLETE-PROJECT",
+      "description": "THE BIOMETRIC VOTING SYSTEM IS A HIGHLY SECURE VOTING SYSTEM .",
+      "url": "https://github.com/CodeBlue0001/BIOMETRIC-VOTING-SYSTEM--COMPLETE-PROJECT",
+      "primaryLanguage": "Python",
+      "year": "2025",
+      "month": "Dec",
+      "pushedAt": "2025-12-13T06:26:08Z",
+      "stars": 0,
+      "languages": {
+        "Python": 16176
+      }
+    },
+    {
+      "repoName": "Folio-V4",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/Folio-V4",
+      "primaryLanguage": "Other",
+      "year": "2025",
+      "month": "Nov",
+      "pushedAt": "2025-11-24T12:28:27Z",
+      "stars": 0,
+      "languages": {}
+    },
+    {
+      "repoName": "Flying-Object-game",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/Flying-Object-game",
+      "primaryLanguage": "JavaScript",
+      "year": "2025",
+      "month": "Nov",
+      "pushedAt": "2025-11-16T15:54:04Z",
+      "stars": 0,
+      "languages": {
+        "JavaScript": 8275,
+        "HTML": 6150,
+        "CSS": 2918,
+        "Python": 821
+      }
+    },
+    {
+      "repoName": "three_js_tests",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/three_js_tests",
+      "primaryLanguage": "Other",
+      "year": "2025",
+      "month": "Nov",
+      "pushedAt": "2025-11-01T06:40:37Z",
+      "stars": 0,
+      "languages": {}
+    },
+    {
+      "repoName": "Scoreasy.Internship.task",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/Scoreasy.Internship.task",
+      "primaryLanguage": "HTML",
+      "year": "2025",
+      "month": "Aug",
+      "pushedAt": "2025-08-04T04:38:06Z",
+      "stars": 0,
+      "languages": {
+        "HTML": 60598,
+        "CSS": 8329
+      }
+    },
+    {
+      "repoName": "Voting_result",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/Voting_result",
+      "primaryLanguage": "HTML",
+      "year": "2025",
+      "month": "Jun",
+      "pushedAt": "2025-06-08T17:47:56Z",
+      "stars": 0,
+      "languages": {
+        "HTML": 8632,
+        "EJS": 7272,
+        "JavaScript": 3744
+      }
+    },
+    {
+      "repoName": "voter_card_download",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/voter_card_download",
+      "primaryLanguage": "EJS",
+      "year": "2025",
+      "month": "Jun",
+      "pushedAt": "2025-06-08T11:08:01Z",
+      "stars": 0,
+      "languages": {
+        "EJS": 8813,
+        "JavaScript": 4600,
+        "Hack": 2161,
+        "Python": 601
+      }
+    },
+    {
+      "repoName": "voteing-server-2",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/voteing-server-2",
+      "primaryLanguage": "Python",
+      "year": "2025",
+      "month": "Jun",
+      "pushedAt": "2025-06-07T18:21:42Z",
+      "stars": 0,
+      "languages": {
+        "Python": 14858,
+        "JavaScript": 5426,
+        "CSS": 5383,
+        "HTML": 2978
+      }
+    },
+    {
+      "repoName": "SaptarshiAndTaniya",
+      "description": "Created with Builder.io",
+      "url": "https://github.com/CodeBlue0001/SaptarshiAndTaniya",
+      "primaryLanguage": "TypeScript",
+      "year": "2025",
+      "month": "Jun",
+      "pushedAt": "2025-06-05T13:46:50Z",
+      "stars": 0,
+      "languages": {
+        "TypeScript": 585466,
+        "JavaScript": 16718,
+        "CSS": 5682,
+        "PowerShell": 4106,
+        "Batchfile": 3398,
+        "HTML": 616
+      }
+    },
+    {
+      "repoName": "album",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/album",
+      "primaryLanguage": "Other",
+      "year": "2025",
+      "month": "Jun",
+      "pushedAt": "2025-06-05T06:27:36Z",
+      "stars": 0,
+      "languages": {}
+    },
+    {
+      "repoName": "testing-galary",
+      "description": "personal",
+      "url": "https://github.com/CodeBlue0001/testing-galary",
+      "primaryLanguage": "Other",
+      "year": "2025",
+      "month": "Jun",
+      "pushedAt": "2025-06-02T19:13:41Z",
+      "stars": 0,
+      "languages": {}
+    },
+    {
+      "repoName": "Dynamic",
+      "description": "dynamic chatt app",
+      "url": "https://github.com/CodeBlue0001/Dynamic",
+      "primaryLanguage": "CSS",
+      "year": "2025",
+      "month": "May",
+      "pushedAt": "2025-05-26T17:02:53Z",
+      "stars": 0,
+      "languages": {
+        "CSS": 229251,
+        "EJS": 50043,
+        "JavaScript": 12277,
+        "HTML": 4768
+      }
+    },
+    {
+      "repoName": "CODSOFT",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/CODSOFT",
+      "primaryLanguage": "Python",
+      "year": "2024",
+      "month": "Oct",
+      "pushedAt": "2024-10-09T16:55:01Z",
+      "stars": 0,
+      "languages": {
+        "Python": 6992,
+        "HTML": 6361
+      }
+    },
+    {
+      "repoName": "practice",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/practice",
+      "primaryLanguage": "Other",
+      "year": "2024",
+      "month": "Aug",
+      "pushedAt": "2024-08-17T08:38:18Z",
+      "stars": 0,
+      "languages": {}
+    },
+    {
+      "repoName": "C-pattarns",
+      "description": "",
+      "url": "https://github.com/CodeBlue0001/C-pattarns",
+      "primaryLanguage": "C",
+      "year": "2024",
+      "month": "May",
+      "pushedAt": "2024-05-10T06:22:22Z",
+      "stars": 0,
+      "languages": {
+        "C": 4674
+      }
+    },
+    {
+      "repoName": "CodeBlue0001",
+      "description": "Config files for my GitHub profile.",
+      "url": "https://github.com/CodeBlue0001/CodeBlue0001",
+      "primaryLanguage": "Other",
+      "year": "2023",
+      "month": "Sep",
+      "pushedAt": "2023-09-19T14:53:54Z",
+      "stars": 0,
+      "languages": {}
+    }
+  ]
+}
