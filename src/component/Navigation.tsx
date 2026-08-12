@@ -35,6 +35,7 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
     { id: 'about', label: 'About' },
     { id: 'projects', label: 'Projects' },
     { id: 'skills', label: 'Skills' },
+    { id: 'achievements', label: 'Achievements' },
     { id: 'contact', label: 'Contact' },
   ];
 

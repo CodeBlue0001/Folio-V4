@@ -276,10 +276,10 @@ export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
               className={`relative w-full max-w-2xl overflow-hidden flex flex-col rounded-3xl border shadow-2xl ${
                 isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
               }`}
-              style={{ maxHeight: '80vh' }}
+              style={{ maxHeight: '85vh' }}
             >
               {/* Modal Header */}
-              <div className={`p-4 sm:p-6 flex items-center justify-between border-b ${isDark ? 'border-slate-800' : 'border-gray-100'}`}>
+              <div className={`p-4 sm:p-6 flex items-center justify-between border-b shrink-0 ${isDark ? 'border-slate-800' : 'border-gray-100'}`}>
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-xl bg-sky-500/10 text-sky-400 shrink-0">
                     {getSkillIcon(selectedSkill)}
@@ -302,26 +302,27 @@ export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
               </div>
 
               <div 
-                className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 custom-scrollbar"
-                style={{ maxHeight: 'min(450px, 60vh)' }}
+                className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0 space-y-4 custom-scrollbar"
+                style={{ maxHeight: '60vh' }}
               >
                 <style>{`
                   .custom-scrollbar {
                     scrollbar-width: thin;
-                    scrollbar-color: ${isDark ? 'rgba(255, 255, 255, 0.3) transparent' : 'rgba(0, 0, 0, 0.35) transparent'};
+                    scrollbar-color: ${isDark ? 'rgba(56, 189, 248, 0.5) rgba(255, 255, 255, 0.05)' : 'rgba(2, 132, 199, 0.5) rgba(0, 0, 0, 0.05)'};
                   }
                   .custom-scrollbar::-webkit-scrollbar {
                     width: 8px;
                   }
                   .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
+                    background: ${isDark ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.05)'};
+                    border-radius: 9999px;
                   }
                   .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: ${isDark ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.35)'};
+                    background: ${isDark ? 'rgba(56, 189, 248, 0.5)' : 'rgba(2, 132, 199, 0.5)'};
                     border-radius: 9999px;
                   }
                   .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: ${isDark ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.55)'};
+                    background: ${isDark ? 'rgba(56, 189, 248, 0.8)' : 'rgba(2, 132, 199, 0.8)'};
                   }
                 `}</style>
                 {activeRepos.length === 0 ? (

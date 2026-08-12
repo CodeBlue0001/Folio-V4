@@ -1,5 +1,27 @@
 [
   {
+    "title": "Folio-V4",
+    "description": "No description provided.",
+    "tags": [
+      "TypeScript"
+    ],
+    "url": "https://github.com/CodeBlue0001/Folio-V4",
+    "demoUrl": "",
+    "stars": 0,
+    "gradient": "from-blue-500 to-cyan-500"
+  },
+  {
+    "title": "ImageCluster",
+    "description": "No description provided.",
+    "tags": [
+      "Python"
+    ],
+    "url": "https://github.com/CodeBlue0001/ImageCluster",
+    "demoUrl": "",
+    "stars": 0,
+    "gradient": "from-purple-500 to-pink-500"
+  },
+  {
     "title": "LeetCode-DSA-practices",
     "description": "This repo contains my DSA tests and leetcode solving sheets, and all my random practices.",
     "tags": [
@@ -8,37 +30,15 @@
     "url": "https://github.com/CodeBlue0001/LeetCode-DSA-practices",
     "demoUrl": "",
     "stars": 0,
-    "gradient": "from-blue-500 to-cyan-500"
-  },
-  {
-    "title": "NLP",
-    "description": "This repo will contains all about the my learnings and projects on NLP ",
-    "tags": [
-      "Jupyter Notebook"
-    ],
-    "url": "https://github.com/CodeBlue0001/NLP",
-    "demoUrl": "",
-    "stars": 0,
-    "gradient": "from-purple-500 to-pink-500"
-  },
-  {
-    "title": "BCT-Training-Gen-AI",
-    "description": "This repo will contain only the bct training files and programs and projects on gen ai .",
-    "tags": [
-      "Jupyter Notebook"
-    ],
-    "url": "https://github.com/CodeBlue0001/BCT-Training-Gen-AI",
-    "demoUrl": "",
-    "stars": 0,
     "gradient": "from-orange-500 to-red-500"
   },
   {
-    "title": "ML-Linear_regresion",
-    "description": "Machine Learning practice ",
+    "title": "Agrimind",
+    "description": "No description provided.",
     "tags": [
       "Jupyter Notebook"
     ],
-    "url": "https://github.com/CodeBlue0001/ML-Linear_regresion",
+    "url": "https://github.com/CodeBlue0001/Agrimind",
     "demoUrl": "",
     "stars": 0,
     "gradient": "from-green-500 to-teal-500"
@@ -55,12 +55,12 @@
     "gradient": "from-yellow-500 to-orange-500"
   },
   {
-    "title": "Agrimind",
-    "description": "No description provided.",
+    "title": "NLP",
+    "description": "This repo will contains all about the my learnings and projects on NLP ",
     "tags": [
       "Jupyter Notebook"
     ],
-    "url": "https://github.com/CodeBlue0001/Agrimind",
+    "url": "https://github.com/CodeBlue0001/NLP",
     "demoUrl": "",
     "stars": 0,
     "gradient": "from-indigo-500 to-purple-500"

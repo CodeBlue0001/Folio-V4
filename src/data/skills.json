@@ -2,19 +2,20 @@
   "expert": [
     "Jupyter Notebook",
     "TypeScript",
-    "CSS"
+    "CSS",
+    "Python"
   ],
   "proficient": [
     "JavaScript",
     "HTML",
-    "Python",
     "EJS",
     "C",
-    "PowerShell"
+    "PowerShell",
+    "Batchfile",
+    "Hack"
   ],
   "familiar": [
-    "Batchfile",
-    "Hack",
-    "Dockerfile"
+    "Dockerfile",
+    "Procfile"
   ]
 }

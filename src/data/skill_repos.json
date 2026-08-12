@@ -43,6 +43,13 @@
       "language": "JavaScript"
     },
     {
+      "name": "Folio-V4",
+      "description": null,
+      "url": "https://github.com/CodeBlue0001/Folio-V4",
+      "stars": 0,
+      "language": "TypeScript"
+    },
+    {
       "name": "SaptarshiAndTaniya",
       "description": "Created with Builder.io",
       "url": "https://github.com/CodeBlue0001/SaptarshiAndTaniya",
@@ -115,6 +122,13 @@
       "language": "JavaScript"
     },
     {
+      "name": "Folio-V4",
+      "description": null,
+      "url": "https://github.com/CodeBlue0001/Folio-V4",
+      "stars": 0,
+      "language": "TypeScript"
+    },
+    {
       "name": "SaptarshiAndTaniya",
       "description": "Created with Builder.io",
       "url": "https://github.com/CodeBlue0001/SaptarshiAndTaniya",
@@ -185,6 +199,13 @@
       "url": "https://github.com/CodeBlue0001/Flying-Object-game",
       "stars": 0,
       "language": "JavaScript"
+    },
+    {
+      "name": "Folio-V4",
+      "description": null,
+      "url": "https://github.com/CodeBlue0001/Folio-V4",
+      "stars": 0,
+      "language": "TypeScript"
     },
     {
       "name": "SaptarshiAndTaniya",
@@ -261,6 +282,13 @@
   ],
   "Python": [
     {
+      "name": "Agrimind",
+      "description": null,
+      "url": "https://github.com/CodeBlue0001/Agrimind",
+      "stars": 0,
+      "language": "Jupyter Notebook"
+    },
+    {
       "name": "BIOMETRIC-VOTING-SYSTEM--COMPLETE-PROJECT",
       "description": "THE BIOMETRIC VOTING SYSTEM IS A HIGHLY SECURE VOTING SYSTEM .",
       "url": "https://github.com/CodeBlue0001/BIOMETRIC-VOTING-SYSTEM--COMPLETE-PROJECT",
@@ -287,6 +315,13 @@
       "url": "https://github.com/CodeBlue0001/Flying-Object-game",
       "stars": 0,
       "language": "JavaScript"
+    },
+    {
+      "name": "ImageCluster",
+      "description": null,
+      "url": "https://github.com/CodeBlue0001/ImageCluster",
+      "stars": 0,
+      "language": "Python"
     },
     {
       "name": "LeetCode-DSA-practices",
@@ -367,9 +402,25 @@
   ],
   "TypeScript": [
     {
+      "name": "Folio-V4",
+      "description": null,
+      "url": "https://github.com/CodeBlue0001/Folio-V4",
+      "stars": 0,
+      "language": "TypeScript"
+    },
+    {
       "name": "SaptarshiAndTaniya",
       "description": "Created with Builder.io",
       "url": "https://github.com/CodeBlue0001/SaptarshiAndTaniya",
+      "stars": 0,
+      "language": "TypeScript"
+    }
+  ],
+  "Procfile": [
+    {
+      "name": "Folio-V4",
+      "description": null,
+      "url": "https://github.com/CodeBlue0001/Folio-V4",
       "stars": 0,
       "language": "TypeScript"
     }
