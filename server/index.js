@@ -79,6 +79,7 @@ app.get('/api/leetcode/:username', async (req, res) => {
             profile {
               realName
               userAvatar
+              aboutMe
               ranking
               reputation
             }
@@ -109,6 +110,12 @@ app.get('/api/leetcode/:username', async (req, res) => {
             difficulty
             count
           }
+          userContestRanking(username: $username) {
+            attendedContestsCount
+            rating
+            globalRanking
+            totalParticipants
+          }
         }`,
         variables: { username }
       })
@@ -123,6 +130,60 @@ app.get('/api/leetcode/:username', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch LeetCode stats', details: error.message });
   }
 });
+
+// Credly Proxy (Bypasses CORS for live badges & certifications)
+app.get('/api/credly/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const response = await fetch(`https://www.credly.com/users/${username}/badges.json`, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch Credly badges' });
+    }
+    const data = await response.json();
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Credly proxy error', details: error.message });
+  }
+});
+
+// Google Cloud Skill Boost Scraper Proxy
+app.get('/api/gcsb/:profileId', async (req, res) => {
+  const { profileId } = req.params;
+  try {
+    const response = await fetch(`https://www.cloudskillsboost.google/public_profiles/${profileId}`, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+    if (!response.ok) {
+      return res.status(response.status).json({ error: 'Failed to fetch GCSB profile' });
+    }
+    const html = await response.text();
+    // Parse badge cards from public profile HTML
+    const badgeRegex = /<div class="public-profile-badge[^"]*">[\s\S]*?<img src="([^"]+)"[\s\S]*?<span class="ql-title-medium[^"]*">\s*([\s\S]*?)\s*<\/span>[\s\S]*?<span class="ql-body-medium[^"]*">\s*Earned\s*([\s\S]*?)\s*<\/span>/g;
+    const badges = [];
+    let match;
+    while ((match = badgeRegex.exec(html)) !== null) {
+      badges.push({
+        title: match[2].trim(),
+        badgeImageUrl: match[1],
+        date: match[3].trim(),
+        issuer: 'Google Cloud Skill Boost',
+        category: 'google',
+        iconType: 'google'
+      });
+    }
+    res.json({ badges, total: badges.length });
+  } catch (error) {
+    res.status(500).json({ error: 'GCSB proxy error', details: error.message });
+  }
+});
+
 
 // Use PORT from environment (required by Render/Heroku/Railway) with 3001 as local fallback
 const PORT = process.env.PORT || 3001;

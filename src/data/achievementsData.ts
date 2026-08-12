@@ -69,7 +69,7 @@ export interface LeetCodeFullProfile {
   };
 }
 
-// ─── LeetCode API (Multi-endpoint fallback engine) ──────────────────────────
+// ─── LeetCode API (Multi-source: Vercel API + backend proxy) ────────────────
 
 export async function fetchLeetCodeStats(username: string): Promise<LeetCodeFullProfile> {
   let stats: LeetCodeStats | null = null;
@@ -78,7 +78,7 @@ export async function fetchLeetCodeStats(username: string): Promise<LeetCodeFull
   let recentSubmissions: LeetCodeSubmission[] = [];
   let profile = { realName: '', aboutMe: '', userAvatar: '', ranking: 0 };
 
-  // 1. Primary Source: Faisal Shohag API for solved stats & recent submissions
+  // ── 1. Primary stats source: Faisal Shohag API (reliable, no CORS issues) ──
   try {
     const res = await fetch(`https://leetcode-api-faisalshohag.vercel.app/${username}`);
     if (res.ok) {
@@ -118,58 +118,25 @@ export async function fetchLeetCodeStats(username: string): Promise<LeetCodeFull
       }
     }
   } catch (err: any) {
-    console.warn('FaisalShohag API failed:', err?.message);
+    console.warn('[LeetCode] Faisal Shohag API failed:', err?.message);
   }
 
-  // 2. Direct LeetCode GraphQL for real profile, badges, and contest details
+  // ── 2. Backend proxy for profile, badges, contest (avoids CORS) ─────────────
+  //    The Express server at /api/leetcode/:username proxies to leetcode.com/graphql
+  //    which bypasses browser CORS restrictions.
   try {
-    const res = await fetch('https://leetcode.com/graphql', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Referer': 'https://leetcode.com',
-      },
-      body: JSON.stringify({
-        query: `
-          query getUserProfile($username: String!) {
-            matchedUser(username: $username) {
-              profile {
-                realName
-                userAvatar
-                aboutMe
-                ranking
-                reputation
-              }
-              badges {
-                id
-                displayName
-                icon
-                creationDate
-              }
-            }
-            userContestRanking(username: $username) {
-              attendedContestsCount
-              rating
-              globalRanking
-              totalParticipants
-            }
-          }
-        `,
-        variables: { username },
-      }),
-    });
-
+    const res = await fetch(`/api/leetcode/${username}`);
     if (res.ok) {
-      const gqlData = await res.json();
-      const user = gqlData?.data?.matchedUser;
-      const contestData = gqlData?.data?.userContestRanking;
+      const data = await res.json();
+      const user = data?.matchedUser;
+      const contestData = data?.userContestRanking;
 
       if (user) {
         if (user.profile) {
-          profile.realName = user.profile.realName || profile.realName;
-          profile.aboutMe = user.profile.aboutMe || profile.aboutMe;
-          profile.userAvatar = user.profile.userAvatar || profile.userAvatar;
-          if (user.profile.ranking) profile.ranking = user.profile.ranking;
+          profile.realName = user.profile.realName || '';
+          profile.aboutMe = user.profile.aboutMe || '';
+          profile.userAvatar = user.profile.userAvatar || '';
+          profile.ranking = user.profile.ranking || (stats?.ranking ?? 0);
         }
 
         if (Array.isArray(user.badges)) {
@@ -179,6 +146,30 @@ export async function fetchLeetCodeStats(username: string): Promise<LeetCodeFull
             icon: b.icon?.startsWith('/') ? `https://leetcode.com${b.icon}` : b.icon || '',
             creationDate: b.creationDate || '',
           }));
+        }
+
+        // If we didn't get stats from Faisal Shohag, extract from GraphQL
+        if (!stats && user.submitStats?.acSubmissionNum) {
+          const ac = user.submitStats.acSubmissionNum;
+          const total = user.submitStats.totalSubmissionNum || [];
+          const allQuestions = data?.allQuestionsCount || [];
+
+          const getCount = (arr: any[], diff: string) => arr.find((x: any) => x.difficulty === diff)?.count || 0;
+
+          stats = {
+            totalSolved: getCount(ac, 'All'),
+            totalQuestions: allQuestions.reduce((sum: number, q: any) => sum + (q.count || 0), 0) || 4018,
+            easySolved: getCount(ac, 'Easy'),
+            easyTotal: getCount(allQuestions, 'Easy') || 958,
+            mediumSolved: getCount(ac, 'Medium'),
+            mediumTotal: getCount(allQuestions, 'Medium') || 2098,
+            hardSolved: getCount(ac, 'Hard'),
+            hardTotal: getCount(allQuestions, 'Hard') || 962,
+            acceptanceRate: 0,
+            ranking: user.profile?.ranking || 0,
+            reputation: user.profile?.reputation || 0,
+            contributionPoints: 0,
+          };
         }
       }
 
@@ -192,53 +183,57 @@ export async function fetchLeetCodeStats(username: string): Promise<LeetCodeFull
       }
     }
   } catch (err: any) {
-    console.warn('LeetCode GraphQL query failed:', err?.message);
-  }
+    console.warn('[LeetCode] Backend proxy failed:', err?.message);
 
-  // 3. Secondary Fallback: Alfa API if primary stats still missing
-  if (!stats) {
+    // ── 3. Fallback: Alfa API (may be rate-limited) ─────────────────────────
     try {
-      const res = await fetch(`https://alfa-leetcode-api.onrender.com/${username}/solved`);
-      if (res.ok) {
-        const solvedData = await res.json();
-        if (solvedData) {
-          stats = {
-            totalSolved: solvedData.solvedProblem ?? 0,
-            totalQuestions: solvedData.totalQuestions ?? 4018,
-            easySolved: solvedData.easySolved ?? 0,
-            easyTotal: solvedData.easyTotal ?? 958,
-            mediumSolved: solvedData.mediumSolved ?? 0,
-            mediumTotal: solvedData.mediumTotal ?? 2098,
-            hardSolved: solvedData.hardSolved ?? 0,
-            hardTotal: solvedData.hardTotal ?? 962,
-            acceptanceRate: 0,
-            ranking: profile.ranking || 0,
-            reputation: 0,
-            contributionPoints: 0,
-            attempting: 39,
+      const [badgesRes, contestRes] = await Promise.allSettled([
+        fetch(`https://alfa-leetcode-api.onrender.com/${username}/badges`),
+        fetch(`https://alfa-leetcode-api.onrender.com/${username}/contest`),
+      ]);
+
+      if (badgesRes.status === 'fulfilled' && badgesRes.value.ok) {
+        const bData = await badgesRes.value.json();
+        if (bData && Array.isArray(bData.badges)) {
+          badges = bData.badges.map((b: any) => ({
+            id: b.id ?? '',
+            displayName: b.displayName ?? b.name ?? '',
+            icon: b.icon ?? '',
+            creationDate: b.creationDate ?? '',
+          }));
+        }
+      }
+
+      if (contestRes.status === 'fulfilled' && contestRes.value.ok) {
+        const cData = await contestRes.value.json();
+        if (cData) {
+          contest = {
+            contestAttend: cData.contestAttend ?? 0,
+            contestRating: Math.round(cData.contestRating ?? 0),
+            contestGlobalRanking: cData.contestGlobalRanking ?? 0,
+            totalParticipants: cData.totalParticipants ?? 0,
           };
         }
       }
-    } catch (err: any) {
-      console.warn('Alfa API fallback failed:', err?.message);
+    } catch {
+      console.warn('[LeetCode] Alfa API fallback also failed');
     }
   }
 
-  // Final fallback values if all external APIs fail
+  // ── Final fallback if all APIs fail ─────────────────────────────────────────
   const finalStats: LeetCodeStats = stats || {
-    totalSolved: 226,
-    totalQuestions: 4018,
-    easySolved: 187,
-    easyTotal: 958,
-    mediumSolved: 36,
-    mediumTotal: 2098,
-    hardSolved: 3,
-    hardTotal: 962,
-    acceptanceRate: 44.2,
-    ranking: profile.ranking || 716178,
-    reputation: 1,
-    contributionPoints: 1895,
-    attempting: 39,
+    totalSolved: 0,
+    totalQuestions: 0,
+    easySolved: 0,
+    easyTotal: 0,
+    mediumSolved: 0,
+    mediumTotal: 0,
+    hardSolved: 0,
+    hardTotal: 0,
+    acceptanceRate: 0,
+    ranking: 0,
+    reputation: 0,
+    contributionPoints: 0,
   };
 
   return {
@@ -249,6 +244,82 @@ export async function fetchLeetCodeStats(username: string): Promise<LeetCodeFull
     username,
     profile,
   };
+}
+
+// ─── Live Certifications & Skill Badges Fetcher ────────────────────────────────
+
+export async function fetchCertifications(config?: {
+  credlyUsername?: string;
+  gcsbProfileId?: string;
+}): Promise<Achievement[]> {
+  const liveAchievements: Achievement[] = [];
+
+  // 1. Fetch Credly Badges
+  if (config?.credlyUsername) {
+    try {
+      const res = await fetch(`/api/credly/${config.credlyUsername}`);
+      if (res.ok) {
+        const json = await res.json();
+        const credlyItems = json?.data || [];
+        credlyItems.forEach((item: any) => {
+          const bt = item.badge_template || {};
+          const skillsList = (bt.skills || []).map((s: any) => s.name || s);
+          liveAchievements.push({
+            id: `credly-${item.id || bt.id || Math.random()}`,
+            title: bt.name || 'Certified Credential',
+            issuer: item.issuer?.summary?.replace('issued by ', '') || bt.issuer?.summary?.replace('issued by ', '') || 'Credly',
+            category: 'certification',
+            date: item.issued_at_date ? item.issued_at_date.slice(0, 4) : '2024',
+            description: bt.description || 'Verified digital badge credential.',
+            badgeImageUrl: item.image_url || bt.image_url,
+            iconType: 'badge',
+            verificationUrl: bt.url || `https://www.credly.com/users/${config.credlyUsername}`,
+            featured: true,
+            skills: skillsList.length > 0 ? skillsList.slice(0, 5) : ['Cloud', 'Verification'],
+            level: (bt.level as any) || 'Specialist',
+          });
+        });
+      }
+    } catch (err: any) {
+      console.warn('[Certifications] Credly fetch error:', err?.message);
+    }
+  }
+
+  // 2. Fetch GCSB Badges
+  if (config?.gcsbProfileId) {
+    try {
+      const res = await fetch(`/api/gcsb/${config.gcsbProfileId}`);
+      if (res.ok) {
+        const json = await res.json();
+        (json.badges || []).forEach((b: any, idx: number) => {
+          liveAchievements.push({
+            id: `gcsb-${idx}`,
+            title: b.title,
+            issuer: 'Google Cloud Skill Boost',
+            category: 'google',
+            date: b.date || '2024',
+            description: 'Earned Google Cloud Skill Boost badge for hands-on labs and skill validation.',
+            badgeImageUrl: b.badgeImageUrl,
+            iconType: 'google',
+            verificationUrl: `https://www.cloudskillsboost.google/public_profiles/${config.gcsbProfileId}`,
+            featured: true,
+            skills: ['Google Cloud Platform', 'Hands-on Labs'],
+            level: 'Specialist',
+          });
+        });
+      }
+    } catch (err: any) {
+      console.warn('[Certifications] GCSB fetch error:', err?.message);
+    }
+  }
+
+  // Merge live badges with static fallback achievements (deduplicate by title)
+  const existingTitles = new Set(liveAchievements.map((a) => a.title.toLowerCase()));
+  const staticFeatured = ACHIEVEMENTS_DATA.filter(
+    (item) => !existingTitles.has(item.title.toLowerCase())
+  );
+
+  return [...liveAchievements, ...staticFeatured];
 }
 
 // ─── Static Achievements (Google Cloud, HackerRank, Coursera, AWS) ─────────────

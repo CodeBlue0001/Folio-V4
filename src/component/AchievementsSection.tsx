@@ -4,8 +4,9 @@ import { Award, Trophy, ExternalLink, ShieldCheck, Cloud, Sparkles, Zap } from '
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLeetcode } from '@fortawesome/free-brands-svg-icons';
 import { Link } from 'react-router-dom';
-import { getFeaturedAchievements, fetchLeetCodeStats, type Achievement, type LeetCodeFullProfile } from '../data/achievementsData';
+import { fetchLeetCodeStats, type LeetCodeFullProfile } from '../data/achievementsData';
 import { LeetCodeSolvedCard } from './ui/LeetCodeSolvedCard';
+import { Certifications } from './Certifications';
 import { Button } from '../components/ui/button';
 
 interface AchievementsSectionProps {
@@ -49,7 +50,6 @@ const AnimatedCounter = ({ value, duration = 2000, suffix = '' }: { value: numbe
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps) => {
-  const featuredBadges = getFeaturedAchievements();
   const [lcData, setLcData] = useState<LeetCodeFullProfile | null>(null);
   const [lcLoading, setLcLoading] = useState(true);
   const [lcError, setLcError] = useState<string | null>(null);
@@ -77,42 +77,6 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
     load();
     return () => { cancelled = true; };
   }, [leetcodeUsername]);
-
-  const renderProviderIcon = (type: Achievement['iconType']) => {
-    switch (type) {
-      case 'google':
-        return (
-          <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/30 flex items-center justify-center p-2 shrink-0">
-            <svg viewBox="0 0 24 24" className="w-full h-full">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" />
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" />
-            </svg>
-          </div>
-        );
-      case 'hackerrank':
-        return (
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-            <svg viewBox="0 0 24 24" className="w-5 h-5 fill-emerald-400">
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke="currentColor" fill="none" strokeWidth="2" />
-            </svg>
-          </div>
-        );
-      case 'coursera':
-        return (
-          <div className="w-10 h-10 rounded-xl bg-blue-600/10 border border-blue-600/30 flex items-center justify-center font-bold text-blue-400 text-xs shrink-0">
-            <Award className="w-5 h-5" />
-          </div>
-        );
-      default:
-        return (
-          <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
-            <Trophy className="w-5 h-5" />
-          </div>
-        );
-    }
-  };
 
   const stats = lcData?.stats;
 
@@ -168,7 +132,9 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
           <div className="flex items-center justify-between mb-6 relative z-10">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 flex items-center justify-center">
-                <FontAwesomeIcon icon={faLeetcode} className="w-6 h-6" />
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                  <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" />
+                </svg>
               </div>
               <div>
                 <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>LeetCode Live</h3>
@@ -258,7 +224,7 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
                             )}
 
                             {/* Tooltip on hover */}
-                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-slate-900 text-white text-[10px] font-semibold rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap z-20 border border-slate-700">
+                            <div className={`absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 text-[10px] font-semibold rounded-lg shadow-xl opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 whitespace-nowrap z-20 border ${isDark ? 'bg-slate-900 text-white border-slate-700' : 'bg-white text-slate-900 border-slate-200'}`}>
                               {badge.displayName}
                             </div>
                           </motion.div>
@@ -278,93 +244,14 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
 
           {/* Footer */}
           <div className={`mt-6 pt-4 border-t flex justify-between items-center text-xs relative z-10 ${isDark ? 'border-slate-700/50' : 'border-slate-200'}`}>
-            <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>Powered by alfa-leetcode-api</span>
+            <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>Powered by LeetCode API</span>
             <span className={isDark ? 'text-slate-500' : 'text-slate-400'}>Auto-refreshes on load</span>
           </div>
         </motion.div>
 
 
-        {/* ─── Certifications & Skill Badges ──────────────────────────────── */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-          className="mb-12"
-        >
-          <h3 className={`text-lg font-bold mb-6 flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            <Cloud className="w-5 h-5 text-blue-400" />
-            Certifications & Cloud Badges
-          </h3>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {featuredBadges.map((badge, idx) => (
-              <motion.div
-                key={badge.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: idx * 0.08 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -6 }}
-                className={`group relative p-6 rounded-2xl border backdrop-blur-md flex flex-col justify-between transition-all overflow-hidden ${isDark
-                  ? 'bg-slate-900/60 border-slate-800/80 hover:border-cyan-500/40 hover:shadow-[0_0_30px_rgba(6,182,212,0.12)]'
-                  : 'bg-white/80 border-slate-200 hover:border-sky-300 hover:shadow-xl'
-                  }`}
-              >
-                {/* Shimmer effect on hover */}
-                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none bg-gradient-to-r from-transparent via-white/5 to-transparent translate-x-[-100%] group-hover:translate-x-[100%]" style={{ transition: 'transform 0.8s ease' }} />
-
-                <div>
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3">
-                      {renderProviderIcon(badge.iconType)}
-                      <div>
-                        <span className={`text-xs font-semibold tracking-wide uppercase px-2.5 py-0.5 rounded-full border ${badge.category === 'google'
-                          ? 'bg-blue-500/10 text-blue-400 border-blue-500/20'
-                          : 'bg-purple-500/10 text-purple-400 border-purple-500/20'
-                          }`}>
-                          {badge.issuer}
-                        </span>
-                        <h4 className={`text-base font-bold mt-1.5 group-hover:text-cyan-400 transition-colors ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                          {badge.title}
-                        </h4>
-                      </div>
-                    </div>
-                    {badge.level && (
-                      <span className={`text-[10px] font-semibold px-2 py-1 rounded-full shrink-0 ${isDark ? 'bg-slate-800 text-cyan-300 border border-slate-700' : 'bg-slate-100 text-slate-700'}`}>
-                        {badge.level}
-                      </span>
-                    )}
-                  </div>
-
-                  <p className={`text-sm mb-4 line-clamp-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    {badge.description}
-                  </p>
-                </div>
-
-                <div>
-                  <div className="flex flex-wrap gap-1.5 mb-4">
-                    {badge.skills.map((skill) => (
-                      <span key={skill} className={`text-xs px-2.5 py-1 rounded-md border ${isDark ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'}`}>
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-
-                  {badge.verificationUrl && (
-                    <a href={badge.verificationUrl} target="_blank" rel="noopener noreferrer"
-                      className={`inline-flex items-center gap-1.5 text-xs font-medium transition-colors ${isDark ? 'text-cyan-400 hover:text-cyan-300' : 'text-sky-600 hover:text-sky-700'}`}
-                    >
-                      <ShieldCheck className="w-3.5 h-3.5" />
-                      <Button>Verify Credential</Button>
-                      <ExternalLink className="w-3 h-3 opacity-70" />
-                    </a>
-                  )}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {/* ─── Certifications & Skill Badges Component ──────────────────── */}
+        <Certifications isDark={isDark} />
 
         {/* ─── View All CTA ───────────────────────────────────────────────── */}
         <motion.div
