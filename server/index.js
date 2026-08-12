@@ -61,6 +61,69 @@ app.post('/api/locations', (req, res) => {
   res.json({ success: true, viewers });
 });
 
+// LeetCode GraphQL Proxy
+app.get('/api/leetcode/:username', async (req, res) => {
+  const { username } = req.params;
+  try {
+    const response = await fetch('https://leetcode.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Referer': 'https://leetcode.com',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      },
+      body: JSON.stringify({
+        query: `query getUserProfile($username: String!) {
+          matchedUser(username: $username) {
+            username
+            profile {
+              realName
+              userAvatar
+              ranking
+              reputation
+            }
+            submitStats: submitStatsGlobal {
+              acSubmissionNum {
+                difficulty
+                count
+                submissions
+              }
+              totalSubmissionNum {
+                difficulty
+                count
+                submissions
+              }
+            }
+            badges {
+              id
+              displayName
+              icon
+              creationDate
+            }
+            userCalendar {
+              streak
+              totalActiveDays
+            }
+          }
+          allQuestionsCount {
+            difficulty
+            count
+          }
+        }`,
+        variables: { username }
+      })
+    });
+
+    const data = await response.json();
+    if (data.errors || !data.data?.matchedUser) {
+      return res.status(404).json({ error: 'LeetCode user not found' });
+    }
+    res.json(data.data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch LeetCode stats', details: error.message });
+  }
+});
+
 // Use PORT from environment (required by Render/Heroku/Railway) with 3001 as local fallback
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
