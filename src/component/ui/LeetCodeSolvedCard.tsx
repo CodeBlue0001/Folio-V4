@@ -17,6 +17,8 @@ export const LeetCodeSolvedCard: React.FC<LeetCodeSolvedCardProps> = ({ stats, i
   const hardSolved = stats?.hardSolved ?? 3;
   const hardTotal = (stats?.hardTotal && stats.hardTotal > 0) ? stats.hardTotal : 962;
 
+  const attempting = stats?.attempting ?? 39;
+
   return (
     <div className="w-full h-full flex items-center justify-center">
       <LeetcodeStats
@@ -26,7 +28,7 @@ export const LeetCodeSolvedCard: React.FC<LeetCodeSolvedCardProps> = ({ stats, i
         mediumTotal={mediumTotal}
         hardSolved={hardSolved}
         hardTotal={hardTotal}
-        attempting={38}
+        attempting={attempting}
         dark={isDark}
       />
     </div>

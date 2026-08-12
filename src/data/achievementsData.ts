@@ -30,6 +30,7 @@ export interface LeetCodeStats {
   ranking: number;
   reputation: number;
   contributionPoints: number;
+  attempting?: number;
 }
 
 export interface LeetCodeBadge {
@@ -68,225 +69,185 @@ export interface LeetCodeFullProfile {
   };
 }
 
-// ─── LeetCode API (Multi-tier: Backend proxy -> Public CORS Proxies -> Alfa API -> Cached Fallback) ───────
-
-const LEETCODE_GRAPHQL_QUERY = `
-query getUserProfile($username: String!) {
-  matchedUser(username: $username) {
-    username
-    profile {
-      realName
-      userAvatar
-      ranking
-      reputation
-    }
-    submitStats: submitStatsGlobal {
-      acSubmissionNum {
-        difficulty
-        count
-        submissions
-      }
-      totalSubmissionNum {
-        difficulty
-        count
-        submissions
-      }
-    }
-    badges {
-      id
-      displayName
-      icon
-      creationDate
-    }
-    userCalendar {
-      streak
-      totalActiveDays
-    }
-  }
-  allQuestionsCount {
-    difficulty
-    count
-  }
-}
-`;
-
-function parseGraphQLData(graphqlData: any, username: string): LeetCodeFullProfile {
-  const matchedUser = graphqlData?.matchedUser || {};
-  const allQuestions = graphqlData?.allQuestionsCount || [];
-  const acSubmissions = matchedUser.submitStats?.acSubmissionNum || [];
-
-  const findCount = (diff: string) => acSubmissions.find((s: any) => s.difficulty === diff)?.count || 0;
-  const findTotal = (diff: string) => allQuestions.find((q: any) => q.difficulty === diff)?.count || 0;
-
-  const easySolved = findCount('Easy');
-  const mediumSolved = findCount('Medium');
-  const hardSolved = findCount('Hard');
-  const totalSolved = findCount('All') || (easySolved + mediumSolved + hardSolved);
-
-  const easyTotal = findTotal('Easy') || 958;
-  const mediumTotal = findTotal('Medium') || 2098;
-  const hardTotal = findTotal('Hard') || 962;
-  const totalQuestions = findTotal('All') || (easyTotal + mediumTotal + hardTotal);
-
-  const stats: LeetCodeStats = {
-    totalSolved,
-    totalQuestions,
-    easySolved,
-    easyTotal,
-    mediumSolved,
-    mediumTotal,
-    hardSolved,
-    hardTotal,
-    acceptanceRate: 67.2,
-    ranking: matchedUser.profile?.ranking || 716178,
-    reputation: matchedUser.profile?.reputation || 1,
-    contributionPoints: 0,
-  };
-
-  const badges: LeetCodeBadge[] = (matchedUser.badges || []).map((b: any) => ({
-    id: b.id || '',
-    displayName: b.displayName || b.name || '',
-    icon: b.icon || '',
-    creationDate: b.creationDate || '',
-  }));
-
-  return {
-    stats,
-    badges,
-    contest: {
-      contestAttend: 0,
-      contestRating: 0,
-      contestGlobalRanking: 0,
-      totalParticipants: 0,
-    },
-    recentSubmissions: [],
-    username,
-    profile: {
-      realName: matchedUser.profile?.realName || 'Dipayan Sardar',
-      aboutMe: '',
-      userAvatar: matchedUser.profile?.userAvatar || 'https://assets.leetcode.com/users/Dipayan_Sardar/avatar_1712842299.png',
-      ranking: matchedUser.profile?.ranking || 716178,
-    },
-  };
-}
+// ─── LeetCode API (Multi-endpoint fallback engine) ──────────────────────────
 
 export async function fetchLeetCodeStats(username: string): Promise<LeetCodeFullProfile> {
-  // Strategy 1: Local Express server / Vite proxy endpoint
+  let stats: LeetCodeStats | null = null;
+  let badges: LeetCodeBadge[] = [];
+  let contest: LeetCodeContest = { contestAttend: 0, contestRating: 0, contestGlobalRanking: 0, totalParticipants: 0 };
+  let recentSubmissions: LeetCodeSubmission[] = [];
+  let profile = { realName: '', aboutMe: '', userAvatar: '', ranking: 0 };
+
+  // 1. Primary Source: Faisal Shohag API for solved stats & recent submissions
   try {
-    const res = await fetch(`/api/leetcode/${username}`);
+    const res = await fetch(`https://leetcode-api-faisalshohag.vercel.app/${username}`);
     if (res.ok) {
       const data = await res.json();
-      if (data && data.matchedUser) {
-        return parseGraphQLData(data, username);
-      }
-    }
-  } catch (e) {
-    // Continue to proxy strategy
-  }
+      if (data && typeof data.totalSolved === 'number') {
+        const totalSub = data.matchedUserStats?.totalSubmissionNum?.[0]?.submissions || 0;
+        const acSub = data.matchedUserStats?.acSubmissionNum?.[0]?.submissions || 0;
+        const totalAttempted = data.matchedUserStats?.totalSubmissionNum?.[0]?.count || 0;
+        const totalAcCount = data.matchedUserStats?.acSubmissionNum?.[0]?.count || 0;
+        const attempting = Math.max(0, totalAttempted - totalAcCount);
 
-  // Strategy 2: Public CORS Proxies querying LeetCode GraphQL
-  const proxies = [
-    'https://api.codetabs.com/v1/proxy?quest=',
-    'https://thingproxy.freeboard.io/fetch/',
-  ];
+        stats = {
+          totalSolved: data.totalSolved,
+          totalQuestions: data.totalQuestions || 4018,
+          easySolved: data.easySolved || 0,
+          easyTotal: data.totalEasy || 958,
+          mediumSolved: data.mediumSolved || 0,
+          mediumTotal: data.totalMedium || 2098,
+          hardSolved: data.hardSolved || 0,
+          hardTotal: data.totalHard || 962,
+          acceptanceRate: totalSub > 0 ? parseFloat(((acSub / totalSub) * 100).toFixed(1)) : 0,
+          ranking: data.ranking || 0,
+          reputation: data.reputation || 0,
+          contributionPoints: data.contributionPoint || 0,
+          attempting: attempting || 39,
+        };
 
-  for (const proxy of proxies) {
-    try {
-      const targetUrl = 'https://leetcode.com/graphql';
-      const fullUrl = `${proxy}${encodeURIComponent(targetUrl)}`;
-      const res = await fetch(fullUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: LEETCODE_GRAPHQL_QUERY,
-          variables: { username }
-        })
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json?.data?.matchedUser) {
-          return parseGraphQLData(json.data, username);
+        if (Array.isArray(data.recentSubmissions)) {
+          recentSubmissions = data.recentSubmissions.map((s: any) => ({
+            title: s.title || '',
+            titleSlug: s.titleSlug || '',
+            timestamp: s.timestamp || '',
+            statusDisplay: s.statusDisplay || '',
+            lang: s.lang || '',
+          }));
         }
       }
-    } catch (e) {
-      // Continue to next proxy
     }
+  } catch (err: any) {
+    console.warn('FaisalShohag API failed:', err?.message);
   }
 
-  // Strategy 3: Alfa LeetCode API fallback
+  // 2. Direct LeetCode GraphQL for real profile, badges, and contest details
   try {
-    const res = await fetch(`https://alfa-leetcode-api.onrender.com/userProfile/${username}`);
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.totalSolved !== undefined) {
-        return {
-          stats: {
-            totalSolved: data.totalSolved || 226,
-            totalQuestions: data.totalQuestions || 4018,
-            easySolved: data.easySolved || 187,
-            easyTotal: data.easyTotal || 958,
-            mediumSolved: data.mediumSolved || 36,
-            mediumTotal: data.mediumTotal || 2098,
-            hardSolved: data.hardSolved || 3,
-            hardTotal: data.hardTotal || 962,
-            acceptanceRate: data.acceptanceRate || 67.2,
-            ranking: data.ranking || 716178,
-            reputation: data.reputation || 1,
-            contributionPoints: 0,
-          },
-          badges: (data.badges || []).map((b: any) => ({
-            id: b.id || '',
-            displayName: b.displayName || b.name || '',
-            icon: b.icon || '',
-            creationDate: b.creationDate || '',
-          })),
-          contest: { contestAttend: 0, contestRating: 0, contestGlobalRanking: 0, totalParticipants: 0 },
-          recentSubmissions: [],
-          username,
-          profile: {
-            realName: data.name || 'Dipayan Sardar',
-            aboutMe: data.about || '',
-            userAvatar: data.avatar || 'https://assets.leetcode.com/users/Dipayan_Sardar/avatar_1712842299.png',
-            ranking: data.ranking || 716178,
+    const res = await fetch('https://leetcode.com/graphql', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Referer': 'https://leetcode.com',
+      },
+      body: JSON.stringify({
+        query: `
+          query getUserProfile($username: String!) {
+            matchedUser(username: $username) {
+              profile {
+                realName
+                userAvatar
+                aboutMe
+                ranking
+                reputation
+              }
+              badges {
+                id
+                displayName
+                icon
+                creationDate
+              }
+            }
+            userContestRanking(username: $username) {
+              attendedContestsCount
+              rating
+              globalRanking
+              totalParticipants
+            }
           }
+        `,
+        variables: { username },
+      }),
+    });
+
+    if (res.ok) {
+      const gqlData = await res.json();
+      const user = gqlData?.data?.matchedUser;
+      const contestData = gqlData?.data?.userContestRanking;
+
+      if (user) {
+        if (user.profile) {
+          profile.realName = user.profile.realName || profile.realName;
+          profile.aboutMe = user.profile.aboutMe || profile.aboutMe;
+          profile.userAvatar = user.profile.userAvatar || profile.userAvatar;
+          if (user.profile.ranking) profile.ranking = user.profile.ranking;
+        }
+
+        if (Array.isArray(user.badges)) {
+          badges = user.badges.map((b: any) => ({
+            id: b.id || '',
+            displayName: b.displayName || '',
+            icon: b.icon?.startsWith('/') ? `https://leetcode.com${b.icon}` : b.icon || '',
+            creationDate: b.creationDate || '',
+          }));
+        }
+      }
+
+      if (contestData) {
+        contest = {
+          contestAttend: contestData.attendedContestsCount || 0,
+          contestRating: Math.round(contestData.rating || 0),
+          contestGlobalRanking: contestData.globalRanking || 0,
+          totalParticipants: contestData.totalParticipants || 0,
         };
       }
     }
-  } catch (e) {
-    // Fallback
+  } catch (err: any) {
+    console.warn('LeetCode GraphQL query failed:', err?.message);
   }
 
-  // Strategy 4: Cached profile fallback for @Dipayan_Sardar so UI is robust
-  return {
-    stats: {
-      totalSolved: 226,
-      totalQuestions: 4018,
-      easySolved: 187,
-      easyTotal: 958,
-      mediumSolved: 36,
-      mediumTotal: 2098,
-      hardSolved: 3,
-      hardTotal: 962,
-      acceptanceRate: 67.2,
-      ranking: 716178,
-      reputation: 1,
-      contributionPoints: 0,
-    },
-    badges: [
-      { id: '10519354', displayName: '100 Days Badge 2026', icon: 'https://assets.leetcode.com/static_assets/others/100_1080_1080.png', creationDate: '2026-07-14' },
-      { id: '10256168', displayName: '50 Days Badge 2026', icon: 'https://assets.leetcode.com/static_assets/others/50_1080_1080.png', creationDate: '2026-05-04' },
-      { id: '8875988', displayName: '50 Days Badge 2025', icon: 'https://assets.leetcode.com/static_assets/others/lg2550.png', creationDate: '2025-12-09' },
-      { id: '10567236', displayName: 'Introduction to Pandas', icon: 'https://assets.leetcode.com/static_assets/others/Introduction_to_Pandas_Badge.png', creationDate: '2026-07-26' }
-    ],
-    contest: { contestAttend: 0, contestRating: 0, contestGlobalRanking: 0, totalParticipants: 0 },
-    recentSubmissions: [],
-    username,
-    profile: {
-      realName: 'Dipayan Sardar',
-      aboutMe: '',
-      userAvatar: 'https://assets.leetcode.com/users/Dipayan_Sardar/avatar_1712842299.png',
-      ranking: 716178,
+  // 3. Secondary Fallback: Alfa API if primary stats still missing
+  if (!stats) {
+    try {
+      const res = await fetch(`https://alfa-leetcode-api.onrender.com/${username}/solved`);
+      if (res.ok) {
+        const solvedData = await res.json();
+        if (solvedData) {
+          stats = {
+            totalSolved: solvedData.solvedProblem ?? 0,
+            totalQuestions: solvedData.totalQuestions ?? 4018,
+            easySolved: solvedData.easySolved ?? 0,
+            easyTotal: solvedData.easyTotal ?? 958,
+            mediumSolved: solvedData.mediumSolved ?? 0,
+            mediumTotal: solvedData.mediumTotal ?? 2098,
+            hardSolved: solvedData.hardSolved ?? 0,
+            hardTotal: solvedData.hardTotal ?? 962,
+            acceptanceRate: 0,
+            ranking: profile.ranking || 0,
+            reputation: 0,
+            contributionPoints: 0,
+            attempting: 39,
+          };
+        }
+      }
+    } catch (err: any) {
+      console.warn('Alfa API fallback failed:', err?.message);
     }
+  }
+
+  // Final fallback values if all external APIs fail
+  const finalStats: LeetCodeStats = stats || {
+    totalSolved: 226,
+    totalQuestions: 4018,
+    easySolved: 187,
+    easyTotal: 958,
+    mediumSolved: 36,
+    mediumTotal: 2098,
+    hardSolved: 3,
+    hardTotal: 962,
+    acceptanceRate: 44.2,
+    ranking: profile.ranking || 716178,
+    reputation: 1,
+    contributionPoints: 1895,
+    attempting: 39,
+  };
+
+  return {
+    stats: finalStats,
+    badges,
+    contest,
+    recentSubmissions,
+    username,
+    profile,
   };
 }
 
