@@ -251,7 +251,10 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
 
 
         {/* ─── Certifications & Skill Badges Component ──────────────────── */}
-        <Certifications isDark={isDark} />
+        <br />
+        <br />
+
+        {/* <Certifications isDark={isDark} /> */}
 
         {/* ─── View All CTA ───────────────────────────────────────────────── */}
         <motion.div

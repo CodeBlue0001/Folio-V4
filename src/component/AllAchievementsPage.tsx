@@ -333,7 +333,7 @@ export const AllAchievementsPage = () => {
         )}
 
         {/* ─── Search & Category Filters ─────────────────────────────────── */}
-        <div className="max-w-4xl mx-auto mb-10 space-y-4">
+        <div className="max-w-6xl mx-auto mb-10 space-y-4">
           <div className="relative">
             <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
             <input
@@ -357,8 +357,8 @@ export const AllAchievementsPage = () => {
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all border ${selectedCategory === cat.id
-                    ? isDark ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'bg-amber-600 border-amber-600 text-white shadow-md'
-                    : isDark ? 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800/80' : 'bg-white/80 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+                  ? isDark ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'bg-amber-600 border-amber-600 text-white shadow-md'
+                  : isDark ? 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800/80' : 'bg-white/80 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
               >
                 {cat.icon}
@@ -395,8 +395,8 @@ export const AllAchievementsPage = () => {
                       {renderBadgeIcon(badge.iconType)}
                       <div>
                         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${badge.category === 'leetcode' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                            badge.category === 'google' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                              'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                          badge.category === 'google' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                            'bg-purple-500/10 text-purple-400 border-purple-500/20'
                           }`}>
                           {badge.issuer}
                         </span>

@@ -301,7 +301,7 @@ export async function fetchCertifications(config?: {
             description: 'Earned Google Cloud Skill Boost badge for hands-on labs and skill validation.',
             badgeImageUrl: b.badgeImageUrl,
             iconType: 'google',
-            verificationUrl: `https://www.cloudskillsboost.google/public_profiles/${config.gcsbProfileId}`,
+            verificationUrl: `https://www.skills.google/public_profiles/${config.gcsbProfileId}`,
             featured: true,
             skills: ['Google Cloud Platform', 'Hands-on Labs'],
             level: 'Specialist',
