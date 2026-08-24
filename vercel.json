@@ -1,0 +1,9 @@
+{
+  "rewrites": [
+    { "source": "/api/leetcode/:username", "destination": "/api/leetcode?username=:username" },
+    { "source": "/api/credly/:username", "destination": "/api/credly?username=:username" },
+    { "source": "/api/gcsb/:profileId", "destination": "/api/gcsb?profileId=:profileId" },
+    { "source": "/api/locations", "destination": "/api/locations" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

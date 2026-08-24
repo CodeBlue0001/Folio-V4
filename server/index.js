@@ -116,6 +116,13 @@ app.get('/api/leetcode/:username', async (req, res) => {
             globalRanking
             totalParticipants
           }
+          recentSubmissionList(username: $username, limit: 10) {
+            title
+            titleSlug
+            timestamp
+            statusDisplay
+            lang
+          }
         }`,
         variables: { username }
       })

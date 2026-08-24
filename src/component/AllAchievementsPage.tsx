@@ -22,8 +22,6 @@ import {
   XCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLeetcode } from '@fortawesome/free-brands-svg-icons';
 import { ACHIEVEMENTS_DATA, fetchLeetCodeStats, type Achievement, type BadgeCategory, type LeetCodeFullProfile } from '../data/achievementsData';
 import { LeetCodeSolvedCard } from './ui/LeetCodeSolvedCard';
 import { ArcReactorBackground } from './ArcReactorBackground';

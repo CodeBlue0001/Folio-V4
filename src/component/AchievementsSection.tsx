@@ -1,13 +1,9 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Award, Trophy, ExternalLink, ShieldCheck, Cloud, Sparkles, Zap } from 'lucide-react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faLeetcode } from '@fortawesome/free-brands-svg-icons';
+import { Award, ExternalLink, Sparkles, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { fetchLeetCodeStats, type LeetCodeFullProfile } from '../data/achievementsData';
 import { LeetCodeSolvedCard } from './ui/LeetCodeSolvedCard';
-import { Certifications } from './Certifications';
-import { Button } from '../components/ui/button';
 
 interface AchievementsSectionProps {
   isDark?: boolean;
@@ -54,7 +50,7 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
   const [lcLoading, setLcLoading] = useState(true);
   const [lcError, setLcError] = useState<string | null>(null);
 
-  const leetcodeUsername = import.meta.env.VITE_LEETCODE_USERNAME || '';
+  const leetcodeUsername = import.meta.env.VITE_LEETCODE_USERNAME || 'Dipayan_Sardar';
 
   useEffect(() => {
     if (!leetcodeUsername) {

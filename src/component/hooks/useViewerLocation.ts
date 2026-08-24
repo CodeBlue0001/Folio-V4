@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 
-const API_BASE = 'http://localhost:3001/api/locations';
+const API_BASE = '/api/locations';
 
 interface Viewer {
   lat: number;
