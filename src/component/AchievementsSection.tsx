@@ -50,7 +50,7 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
   const [lcLoading, setLcLoading] = useState(true);
   const [lcError, setLcError] = useState<string | null>(null);
 
-  const leetcodeUsername = import.meta.env.VITE_LEETCODE_USERNAME || 'Dipayan_Sardar';
+  const leetcodeUsername = import.meta.env.VITE_LEETCODE_USERNAME || '';
 
   useEffect(() => {
     if (!leetcodeUsername) {
@@ -77,8 +77,8 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
   const stats = lcData?.stats;
 
   return (
-    <section id="achievements" className="py-24 relative z-10 overflow-hidden">
-      <div className="container mx-auto px-6 max-w-6xl">
+    <section id="achievements" className="py-12 sm:py-16 md:py-20 px-4 md:px-6 relative z-10 overflow-hidden">
+      <div className="container mx-auto max-w-6xl">
 
         {/* ─── Section Header ─────────────────────────────────────────────── */}
         <motion.div
@@ -86,25 +86,25 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-10 md:mb-12"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-sm font-medium mb-4 backdrop-blur-md">
-            <Sparkles className="w-4 h-4 animate-pulse" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-medium mb-3 backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 animate-pulse" />
             <span>Live Stats & Credentials</span>
             {/* Pulsing live dot */}
-            <span className="relative flex h-2 w-2 ml-1">
+            <span className="relative flex h-1.5 w-1.5 ml-1">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
             </span>
           </div>
 
-          <h2 className={`text-4xl md:text-5xl font-extrabold mb-4 tracking-tight ${isDark
+          <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-3 tracking-tight ${isDark
             ? 'text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-orange-400'
             : 'text-slate-900'
             }`}>
             Achievements & Badges
           </h2>
-          <p className={`max-w-2xl mx-auto text-base md:text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          <p className={`max-w-xl mx-auto text-xs sm:text-sm md:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Real-time coding stats from LeetCode, cloud certifications, and competitive programming milestones.
           </p>
         </motion.div>
@@ -115,7 +115,7 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
           viewport={{ once: true }}
-          className={`rounded-3xl border p-6 md:p-8 mb-10 backdrop-blur-xl relative overflow-hidden ${isDark
+          className={`rounded-2xl border p-4 sm:p-5 md:p-6 mb-8 backdrop-blur-xl relative overflow-hidden ${isDark
             ? 'bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-800/40 border-slate-700/60'
             : 'bg-gradient-to-br from-white/90 via-white/80 to-slate-50/90 border-slate-200 shadow-xl'
             }`}
@@ -125,19 +125,19 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
           <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
 
           {/* Header */}
-          <div className="flex items-center justify-between mb-6 relative z-10">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 flex items-center justify-center">
-                <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+          <div className="flex items-center justify-between mb-4 sm:mb-5 relative z-10">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 flex items-center justify-center">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                   <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" />
                 </svg>
               </div>
               <div>
-                <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>LeetCode Live</h3>
-                <p className={`text-xs flex items-center gap-1.5 flex-wrap ${isDark ? 'text-emerald-400' : 'text-teal-600'}`}>
-                  <span className="relative flex h-2 w-2">
+                <h3 className={`text-base sm:text-lg font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>LeetCode Live</h3>
+                <p className={`text-[11px] flex items-center gap-1.5 flex-wrap ${isDark ? 'text-emerald-400' : 'text-teal-600'}`}>
+                  <span className="relative flex h-1.5 w-1.5">
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
+                    <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500" />
                   </span>
                   {leetcodeUsername ? `@${leetcodeUsername}` : 'Configure username'}
                   {stats?.ranking ? (
@@ -246,33 +246,24 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
         </motion.div>
 
 
-        {/* ─── Certifications & Skill Badges Component ──────────────────── */}
-        <br />
-        <br />
-
-        {/* <Certifications isDark={isDark} /> */}
-
         {/* ─── View All CTA ───────────────────────────────────────────────── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.7 }}
+          transition={{ duration: 0.8, delay: 0.3 }}
           viewport={{ once: true }}
-          className="text-center"
+          className="text-center mt-6 sm:mt-8"
         >
           <Link to="/achievements">
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all shadow-lg font-medium border ${isDark
+              className={`w-full sm:w-auto px-5 sm:px-6 py-2.5 sm:py-3 rounded-full transition-all shadow-lg font-medium border text-xs sm:text-sm ${isDark
                 ? 'bg-slate-900/50 border-slate-500/80 hover:border-white hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.25)]'
                 : 'bg-white/80 border border-sky-100 hover:bg-sky-50/50 hover:border-sky-300 hover:shadow-[0_0_20px_rgba(125,211,252,0.25)]'
                 }`}
             >
-              {/* <Award className="w-5 h-5 text-black-100 group-hover:rotate-12 transition-transform duration-300" /> */}
-              <span className="rainbow-text-effect font-semibold" >View All Achievements & Badges</span>
-
-
+              <span className="rainbow-text-effect font-semibold">View All Achievements & Badges</span>
             </motion.button>
           </Link>
         </motion.div>

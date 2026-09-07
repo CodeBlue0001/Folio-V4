@@ -1,0 +1,19 @@
+{
+  "title": "Dipayan | Full-Stack Developer & Creative Coder",
+  "description": "Portfolio of Dipayan — a full-stack developer crafting immersive web experiences with Three.js, React, and TypeScript.",
+  "language": "en",
+  "robots": {
+    "index": true
+  },
+  "icons": {
+    "icon": "/favicon.svg"
+  },
+  "openGraph": {
+    "image": "/og-image.png"
+  },
+  "analytics": {},
+  "customScripts": {},
+  "accessibility": {
+    "addBypassLinks": true
+  }
+}

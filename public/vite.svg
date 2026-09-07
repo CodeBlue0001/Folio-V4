@@ -1,1 +1,122 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--logos" width="31.88" height="32" preserveAspectRatio="xMidYMid meet" viewBox="0 0 256 257"><defs><linearGradient id="IconifyId1813088fe1fbc01fb466" x1="-.828%" x2="57.636%" y1="7.652%" y2="78.411%"><stop offset="0%" stop-color="#41D1FF"></stop><stop offset="100%" stop-color="#BD34FE"></stop></linearGradient><linearGradient id="IconifyId1813088fe1fbc01fb467" x1="43.376%" x2="50.316%" y1="2.242%" y2="89.03%"><stop offset="0%" stop-color="#FFEA83"></stop><stop offset="8.333%" stop-color="#FFDD35"></stop><stop offset="100%" stop-color="#FFA800"></stop></linearGradient></defs><path fill="url(#IconifyId1813088fe1fbc01fb466)" d="M255.153 37.938L134.897 252.976c-2.483 4.44-8.862 4.466-11.382.048L.875 37.958c-2.746-4.814 1.371-10.646 6.827-9.67l120.385 21.517a6.537 6.537 0 0 0 2.322-.004l117.867-21.483c5.438-.991 9.574 4.796 6.877 9.62Z"></path><path fill="url(#IconifyId1813088fe1fbc01fb467)" d="M185.432.063L96.44 17.501a3.268 3.268 0 0 0-2.634 3.014l-5.474 92.456a3.268 3.268 0 0 0 3.997 3.378l24.777-5.718c2.318-.535 4.413 1.507 3.936 3.838l-7.361 36.047c-.495 2.426 1.782 4.5 4.151 3.78l15.304-4.649c2.372-.72 4.652 1.36 4.15 3.788l-11.698 56.621c-.732 3.542 3.979 5.473 5.943 2.437l1.313-2.028l72.516-144.72c1.215-2.423-.88-5.186-3.54-4.672l-25.505 4.922c-2.396.462-4.435-1.77-3.759-4.114l16.646-57.705c.677-2.35-1.37-4.583-3.769-4.113Z"></path></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%" fill="none">
+  <defs>
+    <!-- Background Radial Glow -->
+    <radialGradient id="bg-glow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+      <stop offset="0%" stop-color="#0ea5e9" stop-opacity="0.35" />
+      <stop offset="60%" stop-color="#0284c7" stop-opacity="0.1" />
+      <stop offset="100%" stop-color="#030712" stop-opacity="0" />
+    </radialGradient>
+
+    <!-- Outer Hexagon Gradient -->
+    <linearGradient id="hex-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="50%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#6366f1" />
+    </linearGradient>
+
+    <!-- Inner Core Gradient -->
+    <linearGradient id="core-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00f5ff" />
+      <stop offset="50%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#818cf8" />
+    </linearGradient>
+
+    <!-- Accent Energy Gradient -->
+    <linearGradient id="accent-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#06b6d4" />
+      <stop offset="50%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="8" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+
+    <filter id="intense-glow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="16" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Background Base -->
+  <rect width="512" height="512" rx="128" fill="#030712" />
+  <circle cx="256" cy="256" r="230" fill="url(#bg-glow)" />
+
+  <!-- Outer Hexagonal Tech Frame -->
+  <polygon 
+    points="256,40 440,146 440,366 256,472 72,366 72,146" 
+    stroke="url(#hex-grad)" 
+    stroke-width="12" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    fill="#080e1a" 
+    fill-opacity="0.85"
+    filter="url(#glow)"
+  />
+
+  <!-- Inner Hex Ring -->
+  <polygon 
+    points="256,70 410,160 410,352 256,442 102,352 102,160" 
+    stroke="#0284c7" 
+    stroke-width="3" 
+    stroke-dasharray="16 12"
+    stroke-opacity="0.6"
+    fill="none"
+  />
+
+  <!-- Tech Corner Nodes -->
+  <circle cx="256" cy="40" r="8" fill="#38bdf8" filter="url(#glow)" />
+  <circle cx="440" cy="146" r="8" fill="#38bdf8" filter="url(#glow)" />
+  <circle cx="440" cy="366" r="8" fill="#6366f1" filter="url(#glow)" />
+  <circle cx="256" cy="472" r="8" fill="#6366f1" filter="url(#glow)" />
+  <circle cx="72" cy="366" r="8" fill="#38bdf8" filter="url(#glow)" />
+  <circle cx="72" cy="146" r="8" fill="#38bdf8" filter="url(#glow)" />
+
+  <!-- Arc Reactor Central Ring -->
+  <circle 
+    cx="256" 
+    cy="256" 
+    r="140" 
+    stroke="url(#accent-grad)" 
+    stroke-width="4" 
+    stroke-dasharray="24 16"
+    stroke-opacity="0.5"
+    fill="none" 
+  />
+
+  <!-- Stylized Custom 'D' Monogram & Cyber Core -->
+  <!-- Vertical Spine -->
+  <path 
+    d="M176 130 C176 120, 184 112, 194 112 L206 112 C216 112, 224 120, 224 130 L224 382 C224 392, 216 400, 206 400 L194 400 C184 400, 176 392, 176 382 Z" 
+    fill="url(#core-grad)" 
+    filter="url(#glow)"
+  />
+
+  <!-- D Arch Curve -->
+  <path 
+    d="M206 112 L280 112 C360 112, 400 160, 400 256 C400 352, 360 400, 280 400 L206 400" 
+    stroke="url(#core-grad)" 
+    stroke-width="42" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    fill="none" 
+    filter="url(#intense-glow)"
+  />
+
+  <!-- Inner Dynamic Circuit Slash / Pulse -->
+  <path 
+    d="M236 195 L276 195 C315 195, 335 220, 335 256 C335 292, 315 317, 276 317 L236 317" 
+    stroke="#ffffff" 
+    stroke-width="12" 
+    stroke-linecap="round" 
+    stroke-linejoin="round"
+    fill="none"
+    stroke-opacity="0.95"
+  />
+
+  <!-- Center Core Energy Pulse -->
+  <circle cx="280" cy="256" r="14" fill="#00f5ff" filter="url(#glow)" />
+  <circle cx="280" cy="256" r="6" fill="#ffffff" />
+</svg>

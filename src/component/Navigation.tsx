@@ -50,13 +50,13 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
           isDark 
             ? 'bg-slate-900/60 border-slate-700/60 shadow-black/40' 
             : 'bg-white/70 border-sky-200/80 shadow-sky-200/30'
-        } px-6 py-3 rounded-full border shadow-lg`}
+        } px-5 py-2 rounded-full border shadow-lg`}
       >
         {navItems.map((item) => (
           <motion.button
             key={item.id}
             onClick={() => scrollToSection(item.id)}
-            className={`px-4 py-2 rounded-full transition-all font-medium border ${
+            className={`px-3.5 py-1.5 rounded-full transition-all font-medium text-xs sm:text-sm border ${
               activeSection === item.id
                 ? isDark
                   ? 'bg-gradient-to-r from-sky-500/20 to-cyan-400/20 border-sky-500/40 text-sky-300 shadow-[0_0_12px_rgba(125,211,252,0.25)]'
@@ -75,7 +75,7 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
           href="/resume.pdf"
           target="_blank"
           rel="noopener noreferrer"
-          className={`px-4 py-2 rounded-full transition-all font-medium border flex items-center justify-center ${
+          className={`px-3.5 py-1.5 rounded-full transition-all font-medium text-xs sm:text-sm border flex items-center justify-center ${
             isDark 
               ? 'border-transparent text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10 hover:shadow-[0_0_12px_rgba(52,211,153,0.15)]' 
               : 'border-transparent text-green-700 hover:text-green-800 hover:bg-green-100 hover:shadow-[0_0_12px_rgba(74,222,128,0.15)]'

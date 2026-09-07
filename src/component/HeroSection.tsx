@@ -55,7 +55,7 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
               ease: 'linear',
             }}
           >
-            Dipayan's Portfolio
+            Dipayan Sardar
           </motion.h1>
 
           <motion.p
@@ -78,11 +78,10 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth' })}
-              className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all shadow-lg font-medium border ${
-                isDark 
-                  ? 'bg-slate-900/50 border-slate-500/80 hover:border-white hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.25)]' 
-                  : 'bg-white/80 border border-sky-100 hover:bg-sky-50/50 hover:border-sky-300 hover:shadow-[0_0_20px_rgba(125,211,252,0.25)]'
-              }`}
+              className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all shadow-lg font-medium border ${isDark
+                ? 'bg-slate-900/50 border-slate-500/80 hover:border-white hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.25)]'
+                : 'bg-white/80 border border-sky-100 hover:bg-sky-50/50 hover:border-sky-300 hover:shadow-[0_0_20px_rgba(125,211,252,0.25)]'
+                }`}
             >
               <span className="rainbow-text-effect font-semibold">View Projects</span>
             </motion.button>
@@ -90,11 +89,10 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
               href="/resume.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all backdrop-blur-sm font-medium border text-center flex items-center justify-center ${
-                isDark 
-                  ? 'bg-slate-900/50 border-emerald-500/80 text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/10 hover:shadow-[0_0_20px_rgba(52,211,153,0.25)]' 
-                  : 'bg-white/80 border border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50/50 hover:shadow-[0_0_20px_rgba(74,222,128,0.25)]'
-              }`}
+              className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all backdrop-blur-sm font-medium border text-center flex items-center justify-center ${isDark
+                ? 'bg-slate-900/50 border-emerald-500/80 text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/10 hover:shadow-[0_0_20px_rgba(52,211,153,0.25)]'
+                : 'bg-white/80 border border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50/50 hover:shadow-[0_0_20px_rgba(74,222,128,0.25)]'
+                }`}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -104,11 +102,10 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
-              className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all backdrop-blur-sm font-medium border-2 ${
-                isDark 
-                  ? 'border-slate-500/80 hover:border-white hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.25)]' 
-                  : 'border-sky-200 hover:border-sky-300 hover:bg-sky-50/50 hover:shadow-[0_0_20px_rgba(125,211,252,0.25)]'
-              }`}
+              className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all backdrop-blur-sm font-medium border-2 ${isDark
+                ? 'border-slate-500/80 hover:border-white hover:bg-white/10 hover:shadow-[0_0_20px_rgba(255,255,255,0.25)]'
+                : 'border-sky-200 hover:border-sky-300 hover:bg-sky-50/50 hover:shadow-[0_0_20px_rgba(125,211,252,0.25)]'
+                }`}
             >
               <span className="sun-orange-text-effect font-semibold">Get in Touch</span>
             </motion.button>

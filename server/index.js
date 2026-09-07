@@ -4,6 +4,15 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Securely load environment variables from .env on the server
+if (typeof process.loadEnvFile === 'function') {
+  try {
+    process.loadEnvFile();
+  } catch {
+    // .env not present or running in cloud environment
+  }
+}
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -60,6 +69,72 @@ app.post('/api/locations', (req, res) => {
   
   res.json({ success: true, viewers });
 });
+
+// GitHub Repos Proxy & Persistent Cache (supports token & prevents rate limiting)
+const GITHUB_CACHE_FILE = path.join(__dirname, 'github_cache.json');
+const reposCache = {};
+const CACHE_TTL_MS = 3 * 60 * 1000; // 3 minutes in-memory cache
+
+// Load disk cache on boot if available
+try {
+  if (fs.existsSync(GITHUB_CACHE_FILE)) {
+    const diskCache = JSON.parse(fs.readFileSync(GITHUB_CACHE_FILE, 'utf-8'));
+    if (diskCache.username && Array.isArray(diskCache.repos)) {
+      reposCache[diskCache.username] = { data: diskCache.repos, timestamp: diskCache.timestamp || Date.now() };
+    }
+  }
+} catch {
+  // ignore
+}
+
+const handleGithubRepos = async (req, res) => {
+  const username = req.params.username || req.query.username || process.env.VITE_GITHUB_USERNAME || process.env.GITHUB_USERNAME;
+  if (!username) {
+    return res.status(400).json({ error: 'GitHub username not configured in environment (VITE_GITHUB_USERNAME)' });
+  }
+  const now = Date.now();
+  const cached = reposCache[username];
+
+  if (cached && (now - cached.timestamp < CACHE_TTL_MS)) {
+    return res.json({ repos: cached.data, cached: true, lastSynced: cached.timestamp });
+  }
+
+  try {
+    const headers = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    };
+    if (process.env.GITHUB_TOKEN && !process.env.GITHUB_TOKEN.includes('your_personal')) {
+      headers['Authorization'] = `Bearer ${process.env.GITHUB_TOKEN}`;
+    }
+
+    const response = await fetch(`https://api.github.com/users/${username}/repos?sort=updated&per_page=100`, { headers });
+    if (response.ok) {
+      const data = await response.json();
+      reposCache[username] = { data, timestamp: now };
+      try {
+        fs.writeFileSync(GITHUB_CACHE_FILE, JSON.stringify({ username, timestamp: now, repos: data }, null, 2));
+      } catch {
+        // ignore write error
+      }
+      return res.json({ repos: data, cached: false, lastSynced: now });
+    }
+
+    if (cached) {
+      return res.json({ repos: cached.data, cached: true, stale: true, lastSynced: cached.timestamp });
+    }
+
+    return res.status(response.status).json({ error: 'GitHub API error', status: response.status });
+  } catch (err) {
+    if (cached) {
+      return res.json({ repos: cached.data, cached: true, stale: true, lastSynced: cached.timestamp });
+    }
+    return res.status(500).json({ error: 'Failed to fetch GitHub repos', details: err.message });
+  }
+};
+
+app.get('/api/github/repos', handleGithubRepos);
+app.get('/api/github/repos/:username', handleGithubRepos);
 
 // LeetCode GraphQL Proxy
 app.get('/api/leetcode/:username', async (req, res) => {

@@ -10,6 +10,7 @@ import { ProjectsSection } from './component/ProjectsSection';
 import { SkillsSection } from './component/SkillSection';
 import { AchievementsSection } from './component/AchievementsSection';
 import { AllAchievementsPage } from './component/AllAchievementsPage';
+import AllProjectsPage from './component/GitHubProjects';
 import { CosmicOrbit } from './component/CosmicOrbit';
 import { useTheme } from './component/hooks/useTheme';
 import { useScrollSpy } from './component/hooks/useScrollSpy';
@@ -307,6 +308,7 @@ function App() {
           <Routes>
             <Route path="/" element={<MainLayout />} />
             <Route path="/achievements" element={<AllAchievementsPage />} />
+            <Route path="/projects" element={<AllProjectsPage />} />
           </Routes>
         </motion.div>
       </div>
