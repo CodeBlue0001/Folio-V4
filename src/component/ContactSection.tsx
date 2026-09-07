@@ -89,12 +89,12 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-8 sm:mb-12 md:mb-16"
+          className="text-center mb-8 sm:mb-10 md:mb-12"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-3 sm:mb-4 md:mb-6 bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent font-bold tracking-tight">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-3 bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent font-bold tracking-tight">
             Get In Touch
           </h2>
-          <p className={`text-sm sm:text-base md:text-lg lg:text-xl max-w-3xl mx-auto ${isDark ? 'text-gray-300' : 'text-gray-700'
+          <p className={`text-xs sm:text-sm md:text-base max-w-2xl mx-auto ${isDark ? 'text-gray-300' : 'text-gray-700'
             }`}>
             Feel free to reach out directly through email, phone, or social profiles!
           </p>
@@ -106,7 +106,7 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
           whileInView={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.2 }}
           viewport={{ once: true }}
-          className="mb-12 sm:mb-16 md:mb-20"
+          className="mb-8 sm:mb-10 md:mb-12"
         >
           <HoloEarth isDark={isDark} userLocation={userLocation} viewers={viewers} locationError={locationError} />
         </motion.div>
@@ -152,15 +152,15 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 md:gap-12 max-w-4xl mx-auto"
+          className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-6 md:gap-8 max-w-4xl mx-auto"
         >
           <div className={`${isDark
             ? 'bg-slate-900/60 border-slate-800'
             : 'bg-white/80 border-sky-100 shadow-sky-100/50'
-            } backdrop-blur-sm p-6 sm:p-8 rounded-2xl border`}>
-            <h3 className={`text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6 ${isDark ? 'text-slate-100' : 'text-slate-800'
+            } backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-2xl border`}>
+            <h3 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-slate-100' : 'text-slate-800'
               }`}>Contact Information</h3>
-            <div className="space-y-4 sm:space-y-6">
+            <div className="space-y-3 sm:space-y-3.5">
               {contactInfo.map((info, index) => (
                 <motion.a
                   key={info.label}
@@ -169,21 +169,21 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  whileHover={{ x: 10 }}
-                  className={`flex items-start gap-3 sm:gap-4 ${isDark
+                  whileHover={{ x: 8 }}
+                  className={`flex items-start gap-2.5 sm:gap-3 ${isDark
                     ? 'text-gray-300 hover:text-white'
                     : 'text-gray-600 hover:text-gray-900'
                     } transition-colors`}
                 >
-                  <div className={`p-2 sm:p-3 ${isDark ? 'bg-emerald-700/20' : 'bg-emerald-500/20'
+                  <div className={`p-2 ${isDark ? 'bg-emerald-700/20' : 'bg-emerald-500/20'
                     } rounded-lg`}>
-                    <info.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'
+                    <info.icon className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'
                       }`} />
                   </div>
                   <div>
-                    <p className={`text-xs sm:text-sm mb-1 ${isDark ? 'text-gray-400' : 'text-gray-600'
+                    <p className={`text-[11px] sm:text-xs mb-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'
                       }`}>{info.label}</p>
-                    <p className="text-sm sm:text-base font-medium">{info.value}</p>
+                    <p className="text-xs sm:text-sm font-medium">{info.value}</p>
                   </div>
                 </motion.a>
               ))}
@@ -193,14 +193,14 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
           <div className={`${isDark
             ? 'bg-slate-900/60 border-slate-800'
             : 'bg-white/80 border-sky-100 shadow-sky-100/50'
-            } backdrop-blur-sm p-6 sm:p-8 rounded-2xl border flex flex-col justify-between`}>
+            } backdrop-blur-sm p-4 sm:p-5 md:p-6 rounded-2xl border flex flex-col justify-between`}>
             <div>
-              <h3 className={`text-xl sm:text-2xl md:text-3xl mb-4 sm:mb-6 ${isDark ? 'text-slate-100' : 'text-slate-800'
+              <h3 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-slate-100' : 'text-slate-800'
                 }`}>Follow Me</h3>
-              <p className={`text-xs sm:text-sm mb-6 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className={`text-xs mb-4 sm:mb-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
                 Connect with me on GitHub & LinkedIn to explore repositories, projects, and work!
               </p>
-              <div className="flex gap-3 sm:gap-4">
+              <div className="flex gap-2.5 sm:gap-3">
                 {socialLinks.map((social, index) => (
                   <motion.a
                     key={social.label}
@@ -211,15 +211,15 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
                     whileInView={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5, delay: index * 0.1 }}
                     viewport={{ once: true }}
-                    whileHover={{ scale: 1.1, rotate: 5 }}
+                    whileHover={{ scale: 1.08, rotate: 4 }}
                     whileTap={{ scale: 0.95 }}
-                    className={`p-3 sm:p-4 rounded-lg border transition-all ${isDark
+                    className={`p-2.5 sm:p-3 rounded-lg border transition-all ${isDark
                       ? 'bg-slate-950 border-slate-850 hover:border-white/30 hover:shadow-[0_0_15px_rgba(255,255,255,0.15)] text-slate-300 hover:text-white'
                       : 'bg-white border-slate-200 hover:border-sky-300 hover:bg-sky-50/50 hover:shadow-[0_0_15px_rgba(14,165,233,0.1)] text-sky-600 hover:text-sky-700'
                       }`}
                     aria-label={social.label}
                   >
-                    <social.icon className={`w-5 h-5 sm:w-6 sm:h-6 ${isDark ? 'text-emerald-400' : 'text-emerald-600'
+                    <social.icon className={`w-4 h-4 sm:w-5 sm:h-5 ${isDark ? 'text-emerald-400' : 'text-emerald-600'
                       }`} />
                   </motion.a>
                 ))}

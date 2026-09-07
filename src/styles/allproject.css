@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+    height: 100%;
+}
+
+@theme inline {
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+    scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+    display: none;
+}
+
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg);
+    }
+
+    33% {
+        transform: translateY(-14px) rotate(3deg);
+    }
+
+    66% {
+        transform: translateY(-7px) rotate(-2deg);
+    }
+}
+
+@keyframes drift {
+
+    0%,
+    100% {
+        transform: translateX(0) translateY(0);
+    }
+
+    50% {
+        transform: translateX(18px) translateY(-10px);
+    }
+}
+
+@keyframes cloud-bob {
+
+    0%,
+    100% {
+        transform: translateY(0) scaleX(1);
+    }
+
+    50% {
+        transform: translateY(-10px) scaleX(1.015);
+    }
+}
+
+@keyframes spin-3d {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes spin-3d-rev {
+    from {
+        transform: rotate(360deg);
+    }
+
+    to {
+        transform: rotate(0deg);
+    }
+}
+
+@keyframes sun-pulse {
+
+    0%,
+    100% {
+        opacity: 0.85;
+        filter: blur(0px);
+    }
+
+    50% {
+        opacity: 1;
+        filter: blur(1px);
+    }
+}
+
+@keyframes sun-ray {
+
+    0%,
+    100% {
+        transform: scaleX(1) opacity(0.6);
+    }
+
+    50% {
+        transform: scaleX(1.2) opacity(1);
+    }
+}
+
+@keyframes twinkle {
+
+    0%,
+    100% {
+        opacity: 0.15;
+        transform: scale(0.8);
+    }
+
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
+@keyframes moon-halo {
+
+    0%,
+    100% {
+        box-shadow: 0 0 30px 10px rgba(186, 230, 253, 0.15);
+    }
+
+    50% {
+        box-shadow: 0 0 55px 18px rgba(186, 230, 253, 0.28);
+    }
+}
+
+@keyframes live-ping {
+    0% {
+        transform: scale(1);
+        opacity: 0.75;
+    }
+
+    100% {
+        transform: scale(2.2);
+        opacity: 0;
+    }
+}
+
+@keyframes pulse-ring {
+
+    0%,
+    100% {
+        opacity: 0.12;
+    }
+
+    50% {
+        opacity: 0.28;
+    }
+}
+
+@keyframes aurora {
+
+    0%,
+    100% {
+        opacity: 0.04;
+        transform: translateX(0) scaleY(1);
+    }
+
+    50% {
+        opacity: 0.10;
+        transform: translateX(30px) scaleY(1.1);
+    }
+}
