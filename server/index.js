@@ -267,8 +267,149 @@ app.get('/api/gcsb/:profileId', async (req, res) => {
 });
 
 
+// Achievements JSON Database API (serves and persists to src/data/achievements.json)
+const ACHIEVEMENTS_FILE = path.join(__dirname, '../src/data/achievements.json');
+
+app.get('/api/achievements', (req, res) => {
+  try {
+    if (!fs.existsSync(ACHIEVEMENTS_FILE)) {
+      return res.json([]);
+    }
+    const data = JSON.parse(fs.readFileSync(ACHIEVEMENTS_FILE, 'utf-8'));
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to read achievements database', details: error.message });
+  }
+});
+
+app.post('/api/achievements', (req, res) => {
+  try {
+    const newAchievement = req.body;
+    if (!newAchievement || !newAchievement.title) {
+      return res.status(400).json({ error: 'Achievement title is required' });
+    }
+    let data = [];
+    if (fs.existsSync(ACHIEVEMENTS_FILE)) {
+      data = JSON.parse(fs.readFileSync(ACHIEVEMENTS_FILE, 'utf-8'));
+    }
+    // Prepend new achievement
+    data = [newAchievement, ...data];
+    fs.writeFileSync(ACHIEVEMENTS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    res.json({ success: true, achievement: newAchievement, total: data.length });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to save achievement', details: error.message });
+  }
+});
+
+// Update achievement
+app.put('/api/achievements/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    const updatedData = req.body;
+    if (!fs.existsSync(ACHIEVEMENTS_FILE)) {
+      return res.status(404).json({ error: 'Database not found' });
+    }
+    let data = JSON.parse(fs.readFileSync(ACHIEVEMENTS_FILE, 'utf-8'));
+    const index = data.findIndex((item) => item.id === id);
+    if (index === -1) {
+      return res.status(404).json({ error: 'Achievement not found' });
+    }
+    data[index] = { ...data[index], ...updatedData, id };
+    fs.writeFileSync(ACHIEVEMENTS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    res.json({ success: true, achievement: data[index] });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update achievement', details: error.message });
+  }
+});
+
+// Delete achievement
+app.delete('/api/achievements/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    if (!fs.existsSync(ACHIEVEMENTS_FILE)) {
+      return res.status(404).json({ error: 'Database not found' });
+    }
+    let data = JSON.parse(fs.readFileSync(ACHIEVEMENTS_FILE, 'utf-8'));
+    const initialLen = data.length;
+    data = data.filter((item) => item.id !== id);
+    if (data.length === initialLen) {
+      return res.status(404).json({ error: 'Achievement not found' });
+    }
+    fs.writeFileSync(ACHIEVEMENTS_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    res.json({ success: true, remaining: data.length });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete achievement', details: error.message });
+  }
+});
+
+// Admin Authentication
+app.post('/api/admin/login', (req, res) => {
+  const { password } = req.body;
+  const configuredPassword = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'admin2026';
+  
+  if (!password) {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+
+  if (password === configuredPassword) {
+    // Generate secure session token
+    const token = `admin_tok_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    return res.json({
+      success: true,
+      token,
+      user: 'Administrator',
+      message: 'Access granted'
+    });
+  }
+
+  return res.status(401).json({ error: 'Invalid administrator credentials' });
+});
+
+// System Diagnostics & Health Status API
+app.get('/api/system/health', (req, res) => {
+  try {
+    let achieveCount = 0;
+    if (fs.existsSync(ACHIEVEMENTS_FILE)) {
+      try {
+        const achs = JSON.parse(fs.readFileSync(ACHIEVEMENTS_FILE, 'utf-8'));
+        achieveCount = Array.isArray(achs) ? achs.length : 0;
+      } catch { }
+    }
+
+    const mem = process.memoryUsage();
+    res.json({
+      status: 'operational',
+      uptimeSeconds: Math.floor(process.uptime()),
+      nodeVersion: process.version,
+      platform: process.platform,
+      memory: {
+        heapUsedMB: Math.round(mem.heapUsed / 1024 / 1024),
+        heapTotalMB: Math.round(mem.heapTotal / 1024 / 1024),
+        rssMB: Math.round(mem.rss / 1024 / 1024)
+      },
+      envStatus: {
+        githubConfigured: Boolean(process.env.VITE_GITHUB_USERNAME || process.env.GITHUB_USERNAME),
+        leetcodeConfigured: Boolean(process.env.VITE_LEETCODE_USERNAME || process.env.LEETCODE_USERNAME),
+        credlyConfigured: Boolean(process.env.VITE_CREDLY_USERNAME),
+        gcsbConfigured: Boolean(process.env.VITE_GCSB_PROFILE_ID),
+        adminPasswordCustomized: Boolean(process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD),
+        port: PORT
+      },
+      database: {
+        achievementsCount: achieveCount,
+        viewersDatabaseExists: fs.existsSync(DB_FILE)
+      },
+      timestamp: Date.now()
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'degraded', error: error.message });
+  }
+});
+
+
 // Use PORT from environment (required by Render/Heroku/Railway) with 3001 as local fallback
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Live Location Database running at http://localhost:${PORT}`);
 });
+

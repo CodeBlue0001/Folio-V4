@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { Code, Palette, Rocket, Zap } from 'lucide-react';
 import { Card } from './ui/card';
 
 interface AboutSectionProps {
@@ -7,28 +6,7 @@ interface AboutSectionProps {
 }
 
 export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
-  const features = [
-    // {
-    //   icon: Code,
-    //   title: 'Clean Code',
-    //   description: 'Writing maintainable and efficient code with best practices',
-    // },
-    // {
-    //   icon: Palette,
-    //   title: 'Creative Design',
-    //   description: 'Crafting beautiful and intuitive user interfaces',
-    // },
-    // {
-    //   icon: Rocket,
-    //   title: 'Fast Performance',
-    //   description: 'Optimizing for speed and user experience',
-    // },
-    // {
-    //   icon: Zap,
-    //   title: 'Modern Stack',
-    //   description: 'Using cutting-edge technologies and frameworks',
-    // },
-  ];
+  const features: { icon: any; title: string; description: string }[] = [];
 
   const timelineItems = [
     {

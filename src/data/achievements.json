@@ -1,0 +1,20 @@
+[
+  {
+    "id": "achieve-test-1",
+    "title": "Google Cloud Computing Foundations",
+    "issuer": "Google Cloud Skill Boost",
+    "category": "google",
+    "date": "2024",
+    "description": "Demonstrated practical expertise in cloud infrastructure, compute engines, virtual machines, and storage management.",
+    "iconType": "google",
+    "verificationUrl": "https://www.cloudskillsboost.google",
+    "featured": true,
+    "skills": [
+      "Google Cloud Platform",
+      "Cloud Infrastructure",
+      "Compute Engine",
+      "Networking"
+    ],
+    "level": "Specialist"
+  }
+]

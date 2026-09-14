@@ -22,7 +22,13 @@ import {
   XCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { ACHIEVEMENTS_DATA, fetchLeetCodeStats, type Achievement, type BadgeCategory, type LeetCodeFullProfile } from '../data/achievementsData';
+import {
+  getAchievements,
+  fetchLeetCodeStats,
+  type Achievement,
+  type BadgeCategory,
+  type LeetCodeFullProfile
+} from '../data/achievementsData';
 import { LeetCodeSolvedCard } from './ui/LeetCodeSolvedCard';
 import { ArcReactorBackground } from './ArcReactorBackground';
 import { ThemeToggle } from './ThemeToggle';
@@ -66,6 +72,28 @@ export const AllAchievementsPage = () => {
   const [selectedCategory, setSelectedCategory] = useState<BadgeCategory | 'all'>('all');
   const [activeModalBadge, setActiveModalBadge] = useState<Achievement | null>(null);
 
+  // Dynamic achievements state sourced from JSON database & local cache
+  const [achievements, setAchievements] = useState<Achievement[]>(() => getAchievements());
+
+  // Sync with /api/achievements server endpoint if available
+  useEffect(() => {
+    let cancelled = false;
+    fetch('/api/achievements')
+      .then((res) => {
+        if (res.ok) return res.json();
+        throw new Error('Endpoint not available');
+      })
+      .then((data) => {
+        if (!cancelled && Array.isArray(data) && data.length > 0) {
+          setAchievements(data);
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Live LeetCode data
   const [lcData, setLcData] = useState<LeetCodeFullProfile | null>(null);
   const [lcLoading, setLcLoading] = useState(true);
@@ -88,8 +116,9 @@ export const AllAchievementsPage = () => {
     { id: 'certification', label: 'Certifications', icon: <Trophy className="w-4 h-4 text-purple-500" /> },
   ];
 
+  // Dynamic filter based on JSON database achievements
   const filteredAchievements = useMemo(() => {
-    return ACHIEVEMENTS_DATA.filter((badge) => {
+    return achievements.filter((badge) => {
       const matchesCategory = selectedCategory === 'all' || badge.category === selectedCategory;
       const query = searchQuery.toLowerCase().trim();
       const matchesSearch =
@@ -100,9 +129,17 @@ export const AllAchievementsPage = () => {
         badge.skills.some((s) => s.toLowerCase().includes(query));
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+  }, [achievements, selectedCategory, searchQuery]);
 
-  const renderBadgeIcon = (type: Achievement['iconType']) => {
+  const renderBadgeIcon = (type: Achievement['iconType'], imageUrl?: string) => {
+    if (imageUrl) {
+      return (
+        <div className="w-10 h-10 rounded-xl bg-slate-800/20 border border-slate-700/40 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+          <img src={imageUrl} alt="Badge" className="w-full h-full object-contain rounded-lg" />
+        </div>
+      );
+    }
+
     switch (type) {
       case 'leetcode':
         return (
@@ -123,10 +160,28 @@ export const AllAchievementsPage = () => {
             </svg>
           </div>
         );
+      case 'aws':
+        return (
+          <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center p-2 shrink-0 text-amber-500 font-extrabold text-xs">
+            AWS
+          </div>
+        );
+      case 'coursera':
+        return (
+          <div className="w-10 h-10 rounded-xl bg-blue-600/15 border border-blue-500/30 flex items-center justify-center p-2 shrink-0 text-blue-500 font-bold text-xs">
+            Coursera
+          </div>
+        );
       case 'hackerrank':
         return (
           <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
             <Award className="w-5 h-5 text-emerald-400" />
+          </div>
+        );
+      case 'badge':
+        return (
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-5 h-5 text-cyan-400" />
           </div>
         );
       default:
@@ -369,7 +424,7 @@ export const AllAchievementsPage = () => {
         {/* Results Counter */}
         <div className="max-w-6xl mx-auto flex items-center justify-between mb-6 px-2">
           <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Showing {filteredAchievements.length} of {ACHIEVEMENTS_DATA.length} Badges
+            Showing {filteredAchievements.length} of {achievements.length} Badges
           </span>
         </div>
 
@@ -390,7 +445,7 @@ export const AllAchievementsPage = () => {
                 <div>
                   <div className="flex items-start justify-between gap-3 mb-4">
                     <div className="flex items-center gap-3">
-                      {renderBadgeIcon(badge.iconType)}
+                      {renderBadgeIcon(badge.iconType, badge.badgeImageUrl)}
                       <div>
                         <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${badge.category === 'leetcode' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                           badge.category === 'google' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
@@ -463,7 +518,7 @@ export const AllAchievementsPage = () => {
               </button>
 
               <div className="flex items-center gap-4 mb-6">
-                {renderBadgeIcon(activeModalBadge.iconType)}
+                {renderBadgeIcon(activeModalBadge.iconType, activeModalBadge.badgeImageUrl)}
                 <div>
                   <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">{activeModalBadge.issuer}</span>
                   <h3 className="text-2xl font-bold">{activeModalBadge.title}</h3>
@@ -506,3 +561,5 @@ export const AllAchievementsPage = () => {
     </div>
   );
 };
+
+

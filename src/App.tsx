@@ -11,6 +11,7 @@ import { SkillsSection } from './component/SkillSection';
 import { AchievementsSection } from './component/AchievementsSection';
 import { AllAchievementsPage } from './component/AllAchievementsPage';
 import AllProjectsPage from './component/GitHubProjects';
+import { AdminDashboard } from './admin';
 import { CosmicOrbit } from './component/CosmicOrbit';
 import { useTheme } from './component/hooks/useTheme';
 import { useScrollSpy } from './component/hooks/useScrollSpy';
@@ -309,6 +310,8 @@ function App() {
             <Route path="/" element={<MainLayout />} />
             <Route path="/achievements" element={<AllAchievementsPage />} />
             <Route path="/projects" element={<AllProjectsPage />} />
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/*" element={<AdminDashboard />} />
           </Routes>
         </motion.div>
       </div>

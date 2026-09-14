@@ -1,3 +1,5 @@
+import initialAchievementsJson from './achievements.json';
+
 export type BadgeCategory = 'leetcode' | 'google' | 'certification' | 'badge' | 'competition';
 
 export interface Achievement {
@@ -315,98 +317,110 @@ export async function fetchCertifications(config?: {
     }
   }
 
-  // Merge live badges with static fallback achievements (deduplicate by title)
+  // Merge live badges with fallback achievements from JSON database (deduplicate by title)
   const existingTitles = new Set(liveAchievements.map((a) => a.title.toLowerCase()));
-  const staticFeatured = ACHIEVEMENTS_DATA.filter(
+  const staticFeatured = getAchievements().filter(
     (item) => !existingTitles.has(item.title.toLowerCase())
   );
 
   return [...liveAchievements, ...staticFeatured];
 }
 
-// ─── Static Achievements (Google Cloud, HackerRank, Coursera, AWS) ─────────────
+// ─── JSON Database & Dynamic Achievement Card Add Management ───────────────────
 
-export const ACHIEVEMENTS_DATA: Achievement[] = [
-  {
-    id: 'gcp-foundations',
-    title: 'Google Cloud Computing Foundations',
-    issuer: 'Google Cloud Skill Boost',
-    category: 'google',
-    date: '2024',
-    description: 'Demonstrated expertise in cloud infrastructure, compute engine, and storage management.',
-    iconType: 'google',
-    verificationUrl: 'https://www.cloudskillsboost.google',
-    featured: true,
-    skills: ['Google Cloud Platform', 'Cloud Infrastructure', 'Networking'],
-    level: 'Specialist',
-  },
-  {
-    id: 'gcp-genai',
-    title: 'Generative AI Fundamentals',
-    issuer: 'Google Cloud',
-    category: 'google',
-    date: '2024',
-    description: 'Completed Google Cloud Skill Boost pathway covering LLMs, Prompt Engineering, and Vertex AI.',
-    iconType: 'google',
-    verificationUrl: 'https://www.cloudskillsboost.google',
-    featured: true,
-    skills: ['Generative AI', 'Prompt Engineering', 'Vertex AI', 'LLMs'],
-    level: 'Specialist',
-  },
-  {
-    id: 'hackerrank-problem-solving',
-    title: '5★ Problem Solving',
-    issuer: 'HackerRank',
-    category: 'certification',
-    date: '2024',
-    description: 'Achieved 5 Stars in Problem Solving, demonstrating strong proficiency in advanced algorithms.',
-    iconType: 'hackerrank',
-    verificationUrl: 'https://www.hackerrank.com',
-    featured: true,
-    skills: ['Data Structures', 'C++', 'Java', 'Algorithms'],
-    level: 'Expert',
-  },
-  {
-    id: 'gcp-bigdata-ml',
-    title: 'Perform Foundational Data & ML Tasks',
-    issuer: 'Google Cloud',
-    category: 'google',
-    date: '2024',
-    description: 'Hands-on laboratory badge for data pipelines, BigQuery analysis, and machine learning models.',
-    iconType: 'google',
-    verificationUrl: 'https://www.cloudskillsboost.google',
-    featured: false,
-    skills: ['BigQuery', 'Machine Learning', 'Data Pipelines'],
-    level: 'Intermediate',
-  },
-  {
-    id: 'coursera-fullstack',
-    title: 'Full-Stack Web Development Specialization',
-    issuer: 'Coursera',
-    category: 'certification',
-    date: '2023',
-    description: 'Certified specialization covering modern frontend frameworks, RESTful APIs, and cloud deployments.',
-    iconType: 'coursera',
-    verificationUrl: 'https://www.coursera.org',
-    featured: true,
-    skills: ['React', 'Node.js', 'Express', 'MongoDB'],
-    level: 'Advanced',
-  },
-  {
-    id: 'aws-cloud-quest',
-    title: 'AWS Cloud Quest: Cloud Practitioner',
-    issuer: 'Amazon Web Services',
-    category: 'certification',
-    date: '2024',
-    description: 'Completed 3D role-playing learning game solving cloud challenges on AWS architecture.',
-    iconType: 'aws',
-    verificationUrl: 'https://aws.amazon.com',
-    featured: false,
-    skills: ['AWS EC2', 'AWS S3', 'Cloud Architecture'],
-    level: 'Intermediate',
-  },
-];
+const ACHIEVEMENTS_STORAGE_KEY = 'folio_achievements_database';
+
+/**
+ * Retrieve all achievement cards dynamically.
+ * Reads from localStorage cache first (to retain dynamically added cards),
+ * falling back to the test achievements JSON database.
+ */
+export const getAchievements = (): Achievement[] => {
+  if (typeof window === 'undefined') {
+    return initialAchievementsJson as Achievement[];
+  }
+  try {
+    const cached = localStorage.getItem(ACHIEVEMENTS_STORAGE_KEY);
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed as Achievement[];
+      }
+    }
+  } catch (e) {
+    console.warn('[Achievements] Failed to parse local storage cache:', e);
+  }
+  return initialAchievementsJson as Achievement[];
+};
+
+/**
+ * Dynamic Achievement Card Add Function.
+ * Adds a new achievement card to the database, persisting to both
+ * localStorage and attempting to POST to the backend API (/api/achievements)
+ * which writes directly to src/data/achievements.json on disk.
+ */
+export const addAchievementCard = (newCard: Partial<Achievement>): Achievement[] => {
+  const current = getAchievements();
+  const id = newCard.id || `achieve-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+  
+  const createdAchievement: Achievement = {
+    id,
+    title: newCard.title || 'Untitled Achievement',
+    issuer: newCard.issuer || 'Self-Paced / Verified',
+    category: newCard.category || 'certification',
+    date: newCard.date || new Date().getFullYear().toString(),
+    description: newCard.description || 'Achievement successfully verified.',
+    badgeImageUrl: newCard.badgeImageUrl || '',
+    iconType: newCard.iconType || 'trophy',
+    verificationUrl: newCard.verificationUrl || '',
+    featured: newCard.featured ?? true,
+    skills: Array.isArray(newCard.skills) && newCard.skills.length > 0 ? newCard.skills : ['General Skill'],
+    level: newCard.level || 'Specialist',
+  };
+
+  const updated = [createdAchievement, ...current];
+
+  // Save to client-side localStorage
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.setItem(ACHIEVEMENTS_STORAGE_KEY, JSON.stringify(updated));
+    } catch (e) {
+      console.warn('[Achievements] Error saving achievement to storage:', e);
+    }
+  }
+
+  // Attempt to persist to server/json disk database via API
+  fetch('/api/achievements', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(createdAchievement),
+  }).catch(() => {
+    // Gracefully handle static preview/client-only environment
+  });
+
+  return updated;
+};
+
+/**
+ * Reset achievements database back to initial test data in achievements.json
+ */
+export const resetAchievements = (): Achievement[] => {
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(ACHIEVEMENTS_STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+  }
+  return initialAchievementsJson as Achievement[];
+};
+
+/**
+ * Exported JSON database reference for backwards compatibility
+ */
+export const ACHIEVEMENTS_DATA: Achievement[] = initialAchievementsJson as Achievement[];
 
 export const getFeaturedAchievements = (): Achievement[] => {
-  return ACHIEVEMENTS_DATA.filter((item) => item.featured);
+  return getAchievements().filter((item) => item.featured);
 };
+
