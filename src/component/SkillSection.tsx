@@ -111,9 +111,13 @@ interface SkillsSectionProps {
 }
 
 export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
-  const { getThemeColors } = usePortfolioContent();
+  const { content, getThemeColors } = usePortfolioContent();
   const { headingColor } = getThemeColors(isDark);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
+
+  const skillsVis = content.visibility?.skills;
+  const showSkillCategories = skillsVis ? skillsVis.showSkillCategories !== false : true;
+  const showGithubActivity = skillsVis ? skillsVis.showGithubActivity !== false : true;
 
   const skillCategories = [
     {
@@ -196,75 +200,79 @@ export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
           {/* Skills Column */}
-          <div className="lg:col-span-7 space-y-4 sm:space-y-5">
-            {skillCategories.map((category, idx) => {
-              const Icon = category.icon;
-              return (
-                <motion.div
-                  key={category.title}
-                  initial={{ opacity: 0, x: -30 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.6, delay: idx * 0.15 }}
-                  viewport={{ once: true, margin: "-50px" }}
-                  className={`p-4 sm:p-5 md:p-6 rounded-2xl border backdrop-blur-sm shadow-md transition-all duration-300 group ${
-                    isDark 
-                      ? 'bg-slate-900/40 border-slate-800 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.08)]' 
-                      : 'bg-white/60 border-gray-200 hover:border-sky-300 hover:shadow-[0_0_30px_rgba(14,165,233,0.12)]'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-3.5 sm:mb-4">
-                    <div className={`p-2 sm:p-2.5 rounded-xl shadow-md shrink-0 w-fit ${
-                      isDark ? 'bg-slate-800 border border-slate-700 text-[#D4A853]' : 'bg-slate-100 border border-slate-200 text-slate-800'
-                    }`}>
-                      <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
-                    </div>
-                    <div>
-                      <h3 className={`text-lg sm:text-xl md:text-2xl font-bold ${
-                        isDark ? 'text-slate-100' : 'text-slate-800'
+          {showSkillCategories && (
+            <div className={`${showGithubActivity ? 'lg:col-span-7' : 'lg:col-span-12'} space-y-4 sm:space-y-5`}>
+              {skillCategories.map((category, idx) => {
+                const Icon = category.icon;
+                return (
+                  <motion.div
+                    key={category.title}
+                    initial={{ opacity: 0, x: -30 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.6, delay: idx * 0.15 }}
+                    viewport={{ once: true, margin: "-50px" }}
+                    className={`p-4 sm:p-5 md:p-6 rounded-2xl border backdrop-blur-sm shadow-md transition-all duration-300 group ${
+                      isDark 
+                        ? 'bg-slate-900/40 border-slate-800 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.08)]' 
+                        : 'bg-white/60 border-gray-200 hover:border-sky-300 hover:shadow-[0_0_30px_rgba(14,165,233,0.12)]'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3 mb-3.5 sm:mb-4">
+                      <div className={`p-2 sm:p-2.5 rounded-xl shadow-md shrink-0 w-fit ${
+                        isDark ? 'bg-slate-800 border border-slate-700 text-[#D4A853]' : 'bg-slate-100 border border-slate-200 text-slate-800'
                       }`}>
-                        {category.title}
-                      </h3>
-                      <p className={`text-xs sm:text-sm mt-0.5 transition-colors ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                        {category.description}
-                      </p>
+                        <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
+                      </div>
+                      <div>
+                        <h3 className={`text-lg sm:text-xl md:text-2xl font-bold ${
+                          isDark ? 'text-slate-100' : 'text-slate-800'
+                        }`}>
+                          {category.title}
+                        </h3>
+                        <p className={`text-xs sm:text-sm mt-0.5 transition-colors ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                          {category.description}
+                        </p>
+                      </div>
                     </div>
-                  </div>
 
-                  <div className="flex flex-wrap gap-2 sm:gap-2.5">
-                    {category.skills.map((skill) => (
-                      <motion.button
-                        key={skill}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => handleSkillClick(skill)}
-                        className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all ${
-                          isDark 
-                            ? 'bg-[#0c1a2e]/50 border-slate-800 text-slate-300 hover:border-white/40 hover:text-white hover:bg-white/5 hover:shadow-[0_0_15px_rgba(241,245,249,0.15)]' 
-                            : 'bg-white border-slate-200 text-slate-700 hover:border-sky-400 hover:text-sky-600 hover:bg-sky-100/80 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)]'
-                        } shadow-sm cursor-pointer flex items-center gap-2`}
-                      >
-                        {getSkillIcon(skill)}
-                        <span>{skill}</span>
-                      </motion.button>
-                    ))}
-                  </div>
-                </motion.div>
-              );
-            })}
-          </div>
+                    <div className="flex flex-wrap gap-2 sm:gap-2.5">
+                      {category.skills.map((skill) => (
+                        <motion.button
+                          key={skill}
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          onClick={() => handleSkillClick(skill)}
+                          className={`px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg text-xs sm:text-sm font-medium border transition-all ${
+                            isDark 
+                              ? 'bg-[#0c1a2e]/50 border-slate-800 text-slate-300 hover:border-white/40 hover:text-white hover:bg-white/5 hover:shadow-[0_0_15px_rgba(241,245,249,0.15)]' 
+                              : 'bg-white border-slate-200 text-slate-700 hover:border-sky-400 hover:text-sky-600 hover:bg-sky-100/80 hover:shadow-[0_0_15px_rgba(56,189,248,0.2)]'
+                          } shadow-sm cursor-pointer flex items-center gap-2`}
+                        >
+                          {getSkillIcon(skill)}
+                          <span>{skill}</span>
+                        </motion.button>
+                      ))}
+                    </div>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
 
           {/* GitHub Activity Column */}
-          <div className="lg:col-span-5 flex flex-col">
-            <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 0.4 }}
-              viewport={{ once: true }}
-              className="h-full min-h-[400px] lg:sticky lg:top-24"
-            >
-              <GitHubActivity isDark={isDark} username={import.meta.env.VITE_GITHUB_USERNAME || ''} />
-            </motion.div>
-          </div>
+          {showGithubActivity && (
+            <div className={`${showSkillCategories ? 'lg:col-span-5' : 'lg:col-span-12'} flex flex-col`}>
+              <motion.div
+                initial={{ opacity: 0, x: 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+                className="h-full min-h-[400px] lg:sticky lg:top-24"
+              >
+                <GitHubActivity isDark={isDark} username={import.meta.env.VITE_GITHUB_USERNAME || ''} />
+              </motion.div>
+            </div>
+          )}
         </div>
       </div>
 

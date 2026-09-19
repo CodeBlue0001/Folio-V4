@@ -10,6 +10,7 @@ interface HeroSectionProps {
 
 export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
   const { content } = usePortfolioContent();
+  const heroVis = content.visibility?.hero;
 
   const threeThemes = {
     dark: {
@@ -29,9 +30,11 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
   return (
     <section id="hero" className="relative h-screen overflow-hidden">
       {/* Three.js Background */}
-      <div className="absolute inset-0 z-0">
-        <ThreeBackground theme={threeThemes[isDark ? 'dark' : 'light']} />
-      </div>
+      {heroVis?.showThreeBackground !== false && (
+        <div className="absolute inset-0 z-0">
+          <ThreeBackground theme={threeThemes[isDark ? 'dark' : 'light']} />
+        </div>
+      )}
 
       {/* Overlay gradient for better text readability */}
       <div className={`absolute inset-0 z-[1] ${isDark
@@ -47,21 +50,25 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
           transition={{ duration: 0.8, delay: 0.3 }}
           className="text-center max-w-5xl"
         >
-          <motion.h1
-            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-4 md:mb-6 tracking-tight min-h-[72px] sm:min-h-[64px] md:min-h-[84px] lg:min-h-[100px] flex items-center justify-center font-bold"
-          >
-            <TypewriterHeading isDark={isDark} phrases={content.hero.phrases} />
-          </motion.h1>
+          {heroVis?.showTypewriter !== false && (
+            <motion.h1
+              className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-4 md:mb-6 tracking-tight min-h-[72px] sm:min-h-[64px] md:min-h-[84px] lg:min-h-[100px] flex items-center justify-center font-bold"
+            >
+              <TypewriterHeading isDark={isDark} phrases={content.hero.phrases} />
+            </motion.h1>
+          )}
 
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-6 md:mb-8 max-w-3xl mx-auto ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
-              }`}
-          >
-            {content.hero.subtitle}
-          </motion.p>
+          {heroVis?.showSubtitle !== false && (
+            <motion.p
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.5 }}
+              className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-6 md:mb-8 max-w-3xl mx-auto ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
+                }`}
+            >
+              {content.hero.subtitle}
+            </motion.p>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -80,19 +87,23 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
             >
               <span className="rainbow-text-effect font-semibold">View Projects</span>
             </motion.button>
-            <motion.a
-              href={`/${content.hero.resumeFileName}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all backdrop-blur-sm font-medium border text-center flex items-center justify-center ${isDark
-                ? 'bg-slate-900/50 border-emerald-500/80 text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/10 hover:shadow-[0_0_20px_rgba(52,211,153,0.25)]'
-                : 'bg-white/80 border border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50/50 hover:shadow-[0_0_20px_rgba(74,222,128,0.25)]'
-                }`}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <span className="font-semibold">View Resume</span>
-            </motion.a>
+
+            {heroVis?.showResumeButton !== false && (
+              <motion.a
+                href={`/${content.hero.resumeFileName}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all backdrop-blur-sm font-medium border text-center flex items-center justify-center ${isDark
+                  ? 'bg-slate-900/50 border-emerald-500/80 text-emerald-400 hover:border-emerald-400 hover:bg-emerald-500/10 hover:shadow-[0_0_20px_rgba(52,211,153,0.25)]'
+                  : 'bg-white/80 border border-green-300 text-green-700 hover:border-green-400 hover:bg-green-50/50 hover:shadow-[0_0_20px_rgba(74,222,128,0.25)]'
+                  }`}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <span className="font-semibold">View Resume</span>
+              </motion.a>
+            )}
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -108,17 +119,19 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
         </motion.div>
 
         {/* Scroll Indicator */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, y: [0, 10, 0] }}
-          transition={{
-            opacity: { delay: 1, duration: 0.5 },
-            y: { delay: 1.5, duration: 1.5, repeat: Infinity },
-          }}
-          className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2"
-        >
-          <ChevronDown className={`w-6 h-6 md:w-8 md:h-8 ${isDark ? 'text-amber-300/60' : 'text-sky-700/60'}`} />
-        </motion.div>
+        {heroVis?.showScrollIndicator !== false && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, y: [0, 10, 0] }}
+            transition={{
+              opacity: { delay: 1, duration: 0.5 },
+              y: { delay: 1.5, duration: 1.5, repeat: Infinity },
+            }}
+            className="absolute bottom-6 md:bottom-8 left-1/2 -translate-x-1/2"
+          >
+            <ChevronDown className={`w-6 h-6 md:w-8 md:h-8 ${isDark ? 'text-amber-300/60' : 'text-sky-700/60'}`} />
+          </motion.div>
+        )}
       </div>
     </section>
   );

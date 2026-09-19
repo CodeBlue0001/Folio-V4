@@ -53,5 +53,58 @@
   },
   "footer": {
     "text": "Dipayan Sardar"
+  },
+  "visibility": {
+    "sections": {
+      "hero": true,
+      "about": true,
+      "projects": true,
+      "skills": true,
+      "achievements": true,
+      "contact": true,
+      "footer": true
+    },
+    "achievements": {
+      "showLeetCodeDashboard": true,
+      "showLeetCodeStats": false,
+      "showLeetCodeBadges": true,
+      "showViewAllButton": true
+    },
+    "hero": {
+      "showThreeBackground": true,
+      "showTypewriter": true,
+      "showSubtitle": true,
+      "showResumeButton": true,
+      "showScrollIndicator": true
+    },
+    "about": {
+      "showProfileImage": true,
+      "showJourneyTimeline": true,
+      "showBio": true,
+      "showHobbies": true,
+      "showFloatingParticles": true
+    },
+    "projects": {
+      "showGithubRepos": true,
+      "showStars": true,
+      "showTags": true
+    },
+    "skills": {
+      "showSkillCategories": true,
+      "showGithubActivity": true
+    },
+    "contact": {
+      "showHoloEarth": true,
+      "showContactInfoCards": true,
+      "showSocialLinks": true
+    },
+    "decorations": {
+      "showArcReactor": true,
+      "showCosmicOrbit": true,
+      "showGlobalParticles": true,
+      "showScrollProgress": true,
+      "showScrollToTop": true,
+      "showThemeToggle": true
+    }
   }
 }

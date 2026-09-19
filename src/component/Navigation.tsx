@@ -32,7 +32,7 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
-  const navItems = [
+  const allNavItems = [
     { id: 'hero', label: 'Home' },
     { id: 'about', label: 'About' },
     { id: 'projects', label: 'Projects' },
@@ -40,6 +40,12 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
     { id: 'achievements', label: 'Achievements' },
     { id: 'contact', label: 'Contact' },
   ];
+
+  const secVis = content.visibility?.sections;
+  const navItems = allNavItems.filter((item) => {
+    if (!secVis) return true;
+    return secVis[item.id as keyof typeof secVis] !== false;
+  });
 
   return (
     <>

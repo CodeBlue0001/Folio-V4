@@ -20,6 +20,60 @@ export interface PortfolioTheme {
   accentColor?: string;
 }
 
+export interface ComponentVisibility {
+  sections: {
+    hero: boolean;
+    about: boolean;
+    projects: boolean;
+    skills: boolean;
+    achievements: boolean;
+    contact: boolean;
+    footer: boolean;
+  };
+  achievements: {
+    showLeetCodeDashboard: boolean;
+    showLeetCodeStats: boolean;
+    showLeetCodeBadges: boolean;
+    showViewAllButton: boolean;
+  };
+  hero: {
+    showThreeBackground: boolean;
+    showTypewriter: boolean;
+    showSubtitle: boolean;
+    showResumeButton: boolean;
+    showScrollIndicator: boolean;
+  };
+  about: {
+    showProfileImage: boolean;
+    showJourneyTimeline: boolean;
+    showBio: boolean;
+    showHobbies: boolean;
+    showFloatingParticles: boolean;
+  };
+  projects: {
+    showGithubRepos: boolean;
+    showStars: boolean;
+    showTags: boolean;
+  };
+  skills: {
+    showSkillCategories: boolean;
+    showGithubActivity: boolean;
+  };
+  contact: {
+    showHoloEarth: boolean;
+    showContactInfoCards: boolean;
+    showSocialLinks: boolean;
+  };
+  decorations: {
+    showArcReactor: boolean;
+    showCosmicOrbit: boolean;
+    showGlobalParticles: boolean;
+    showScrollProgress: boolean;
+    showScrollToTop: boolean;
+    showThemeToggle: boolean;
+  };
+}
+
 export interface PortfolioContent {
   hero: {
     phrases: string[];
@@ -46,6 +100,7 @@ export interface PortfolioContent {
   footer: {
     text: string;
   };
+  visibility: ComponentVisibility;
 }
 
 // ─── Defaults (fallback when API is unreachable) ────────────────────────────
@@ -91,7 +146,62 @@ export const DEFAULT_CONTENT: PortfolioContent = {
   footer: {
     text: 'Dipayan',
   },
+  visibility: {
+    sections: {
+      hero: true,
+      about: true,
+      projects: true,
+      skills: true,
+      achievements: true,
+      contact: true,
+      footer: true,
+    },
+    achievements: {
+      showLeetCodeDashboard: true,
+      showLeetCodeStats: true,
+      showLeetCodeBadges: true,
+      showViewAllButton: true,
+    },
+    hero: {
+      showThreeBackground: true,
+      showTypewriter: true,
+      showSubtitle: true,
+      showResumeButton: true,
+      showScrollIndicator: true,
+    },
+    about: {
+      showProfileImage: true,
+      showJourneyTimeline: true,
+      showBio: true,
+      showHobbies: true,
+      showFloatingParticles: true,
+    },
+    projects: {
+      showGithubRepos: true,
+      showStars: true,
+      showTags: true,
+    },
+    skills: {
+      showSkillCategories: true,
+      showGithubActivity: true,
+    },
+    contact: {
+      showHoloEarth: true,
+      showContactInfoCards: true,
+      showSocialLinks: true,
+    },
+    decorations: {
+      showArcReactor: true,
+      showCosmicOrbit: true,
+      showGlobalParticles: true,
+      showScrollProgress: true,
+      showScrollToTop: true,
+      showThemeToggle: true,
+    },
+  },
 };
+
+export const DEFAULT_VISIBILITY = DEFAULT_CONTENT.visibility;
 
 const CACHE_KEY = 'folio_portfolio_content';
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes

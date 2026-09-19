@@ -6,7 +6,8 @@ import {
   LogOut,
   Terminal,
   ExternalLink,
-  Palette
+  Palette,
+  Sliders
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { isUserAdminAuthenticated, adminLogout } from './adminAuth';
@@ -14,8 +15,9 @@ import { AdminLogin } from './AdminLogin';
 import { AdminAchievements } from './AdminAchievements';
 import { AdminSystemHealth } from './AdminSystemHealth';
 import { AdminPortfolioEditor } from './AdminPortfolioEditor';
+import { AdminLayoutManager } from './AdminLayoutManager';
 
-type AdminTab = 'achievements' | 'health' | 'editor';
+type AdminTab = 'achievements' | 'health' | 'editor' | 'layout';
 
 export const AdminDashboard: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isUserAdminAuthenticated());
@@ -118,6 +120,18 @@ export const AdminDashboard: React.FC = () => {
             <Palette className="w-4 h-4 text-violet-400" />
             <span>Portfolio Editor</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('layout')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'layout'
+                ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            }`}
+          >
+            <Sliders className="w-4 h-4 text-emerald-400" />
+            <span>Layout & Elements</span>
+          </button>
         </div>
       </header>
 
@@ -157,6 +171,18 @@ export const AdminDashboard: React.FC = () => {
               transition={{ duration: 0.2 }}
             >
               <AdminPortfolioEditor />
+            </motion.div>
+          )}
+
+          {activeTab === 'layout' && (
+            <motion.div
+              key="layout"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <AdminLayoutManager />
             </motion.div>
           )}
         </AnimatePresence>

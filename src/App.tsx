@@ -49,18 +49,23 @@ const stardustData = Array.from({ length: STARDUST_COUNT }, () => ({
 function MainLayout() {
   const [showScrollTop, setShowScrollTop] = useState(false);
   const { isDark, toggle } = useTheme();
-  const { activeSection, scrollToSection } = useScrollSpy([
-    'hero',
-    'about', 
-    'projects',
-    'skills',
-    'achievements',
-    'contact'
-  ]);
 
   // Collect viewer location IMMEDIATELY on app mount
   const { userLocation, viewers, locationError } = useViewerLocation();
   const { content } = usePortfolioContent();
+
+  const secVis = content.visibility?.sections;
+  const decVis = content.visibility?.decorations;
+
+  const visibleSectionIds = useMemo(() => {
+    const sec = content.visibility?.sections;
+    const all = ['hero', 'about', 'projects', 'skills', 'achievements', 'contact'];
+    return all.filter(id => sec ? sec[id as keyof typeof sec] !== false : true);
+  }, [content.visibility?.sections]);
+
+  const { activeSection, scrollToSection } = useScrollSpy(
+    visibleSectionIds.length > 0 ? visibleSectionIds : ['hero']
+  );
 
   // Show/hide scroll-to-top button based on scroll position
   useEffect(() => {
@@ -93,15 +98,21 @@ function MainLayout() {
   return (
     <div className="min-h-screen relative">
       {/* Arc Reactor Background for entire page */}
-      <div className="fixed inset-0 z-0">
-        <ArcReactorBackground isDark={isDark}/>
-      </div>
+      {decVis?.showArcReactor !== false && (
+        <div className="fixed inset-0 z-0">
+          <ArcReactorBackground isDark={isDark}/>
+        </div>
+      )}
       
       {/* Cosmic Orbit System */}
-      <CosmicOrbit isDark={isDark} />
+      {decVis?.showCosmicOrbit !== false && (
+        <CosmicOrbit isDark={isDark} />
+      )}
 
       {/* Theme Toggle */}
-      <ThemeToggle isDark={isDark} toggle={toggle} />
+      {decVis?.showThemeToggle !== false && (
+        <ThemeToggle isDark={isDark} toggle={toggle} />
+      )}
 
       {/* Navigation */}
       <Navigation 
@@ -113,92 +124,110 @@ function MainLayout() {
       {/* Page Sections */}
       <main className="relative z-10">
         {/* Scroll Progress Indicator */}
-        <ScrollProgress />
+        {decVis?.showScrollProgress !== false && (
+          <ScrollProgress />
+        )}
         
         {/* Hero with Three.js Background */}
-        <HeroSection isDark={isDark} />
+        {secVis?.hero !== false && (
+          <HeroSection isDark={isDark} />
+        )}
         
         {/* Other Sections */}
-        <AboutSection isDark={isDark} />
-        <ProjectsSection isDark={isDark} />
-        <SkillsSection isDark={isDark} />
-        <AchievementsSection isDark={isDark} />
-        <Suspense fallback={
-          <div className="min-h-screen flex items-center justify-center">
-            <div className={`w-8 h-8 rounded-full border-2 border-t-transparent animate-spin ${isDark ? 'border-emerald-400' : 'border-teal-600'}`} />
-          </div>
-        }>
-          <ContactSection isDark={isDark} userLocation={userLocation} viewers={viewers} locationError={locationError} />
-        </Suspense>
+        {secVis?.about !== false && (
+          <AboutSection isDark={isDark} />
+        )}
+        {secVis?.projects !== false && (
+          <ProjectsSection isDark={isDark} />
+        )}
+        {secVis?.skills !== false && (
+          <SkillsSection isDark={isDark} />
+        )}
+        {secVis?.achievements !== false && (
+          <AchievementsSection isDark={isDark} />
+        )}
+        {secVis?.contact !== false && (
+          <Suspense fallback={
+            <div className="min-h-screen flex items-center justify-center">
+              <div className={`w-8 h-8 rounded-full border-2 border-t-transparent animate-spin ${isDark ? 'border-emerald-400' : 'border-teal-600'}`} />
+            </div>
+          }>
+            <ContactSection isDark={isDark} userLocation={userLocation} viewers={viewers} locationError={locationError} />
+          </Suspense>
+        )}
 
         {/* Footer */}
-        <motion.footer
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
-          viewport={{ once: true }}
-          className={`${
-            isDark 
-              ? 'bg-slate-900/95 border-slate-800' 
-              : 'bg-gray-100/95 border-gray-300'
-          } border-t py-8`}
-        >
-          <div className="container mx-auto px-6 text-center">
-            <motion.p
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 3, repeat: Infinity }}
-              className={isDark ? 'text-slate-400' : 'text-gray-600'}
-            >
-              © {new Date().getFullYear()} {content.footer.text}. Crafted with passion and precision.
-            </motion.p>
-            
-            {/* Footer decorative elements */}
-            <div className="flex justify-center mt-4 gap-4">
-              {[...Array(5)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{
-                    scale: [1, 1.2, 1],
-                    rotate: [0, 180, 360],
-                  }}
-                  transition={{
-                    duration: 4 + i,
-                    repeat: Infinity,
-                    delay: i * 0.2,
-                  }}
-                  className={`w-2 h-2 rounded-full ${
-                    isDark ? 'bg-blue-400/30' : 'bg-blue-600/30'
-                  }`}
-                />
-              ))}
+        {secVis?.footer !== false && (
+          <motion.footer
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className={`${
+              isDark 
+                ? 'bg-slate-900/95 border-slate-800' 
+                : 'bg-gray-100/95 border-gray-300'
+            } border-t py-8`}
+          >
+            <div className="container mx-auto px-6 text-center">
+              <motion.p
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 3, repeat: Infinity }}
+                className={isDark ? 'text-slate-400' : 'text-gray-600'}
+              >
+                © {new Date().getFullYear()} {content.footer.text}. Crafted with passion and precision.
+              </motion.p>
+              
+              {/* Footer decorative elements */}
+              <div className="flex justify-center mt-4 gap-4">
+                {[...Array(5)].map((_, i) => (
+                  <motion.div
+                    key={i}
+                    animate={{
+                      scale: [1, 1.2, 1],
+                      rotate: [0, 180, 360],
+                    }}
+                    transition={{
+                      duration: 4 + i,
+                      repeat: Infinity,
+                      delay: i * 0.2,
+                    }}
+                    className={`w-2 h-2 rounded-full ${
+                      isDark ? 'bg-blue-400/30' : 'bg-blue-600/30'
+                    }`}
+                  />
+                ))}
+              </div>
             </div>
-          </div>
-        </motion.footer>
+          </motion.footer>
+        )}
       </main>
 
       {/* Scroll to Top Button — only visible after scrolling down */}
-      <AnimatePresence>
-        {showScrollTop && (
-          <motion.button
-            onClick={() => scrollToSection('hero')}
-            className={`fixed bottom-6 right-6 z-40 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center transition-all border ${
-              isDark 
-                ? 'bg-slate-800/80 border-slate-600/60 text-slate-200 hover:bg-white/15 hover:border-white/40 hover:text-white hover:shadow-[0_0_15px_rgba(241,245,249,0.2)]' 
-                : 'bg-white/80 border-sky-200/80 text-sky-700 hover:bg-sky-100/80 hover:border-sky-400 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]'
-            }`}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.95 }}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
-          >
-            <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-            </svg>
-          </motion.button>
-        )}
-      </AnimatePresence>
+      {decVis?.showScrollToTop !== false && (
+        <AnimatePresence>
+          {showScrollTop && (
+            <motion.button
+              onClick={() => scrollToSection('hero')}
+              className={`fixed bottom-6 right-6 z-40 w-10 h-10 md:w-12 md:h-12 rounded-full shadow-lg flex items-center justify-center transition-all border ${
+                isDark 
+                  ? 'bg-slate-800/80 border-slate-600/60 text-slate-200 hover:bg-white/15 hover:border-white/40 hover:text-white hover:shadow-[0_0_15px_rgba(241,245,249,0.2)]' 
+                  : 'bg-white/80 border-sky-200/80 text-sky-700 hover:bg-sky-100/80 hover:border-sky-400 hover:shadow-[0_0_15px_rgba(56,189,248,0.3)]'
+              }`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+            </motion.button>
+          )}
+        </AnimatePresence>
+      )}
 
       {/* Background Pattern */}
       <div className="fixed inset-0 pointer-events-none opacity-5 dark:opacity-10 z-[5]">
@@ -230,7 +259,8 @@ function MainLayout() {
       </div>
 
       {/* Global Particle System */}
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-[5]">
+      {decVis?.showGlobalParticles !== false && (
+        <div className="fixed inset-0 pointer-events-none overflow-hidden z-[5]">
         {particleData.map((p, i) => (
           <motion.div
             key={`particle-${i}`}
@@ -272,7 +302,8 @@ function MainLayout() {
             style={stardustStyles[i]}
           />
         ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 }

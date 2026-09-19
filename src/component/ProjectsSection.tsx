@@ -31,8 +31,13 @@ const DEFAULT_GRADIENTS = [
 ];
 
 export const ProjectsSection = ({ isDark = true }: ProjectsSectionProps) => {
-  const { getThemeColors } = usePortfolioContent();
+  const { content, getThemeColors } = usePortfolioContent();
   const { headingColor } = getThemeColors(isDark);
+
+  const projVis = content.visibility?.projects;
+  const showRepos = projVis ? projVis.showGithubRepos !== false : true;
+  const showStars = projVis ? projVis.showStars !== false : true;
+  const showTags = projVis ? projVis.showTags !== false : true;
 
   const [projects, setProjects] = useState<ProjectItem[]>(() => {
     try {
@@ -121,209 +126,230 @@ export const ProjectsSection = ({ isDark = true }: ProjectsSectionProps) => {
         </motion.div>
 
         {/* Mobile View - Clean Minimal Cards (No extra images or accordion button) */}
-        <div className="grid md:hidden grid-cols-1 gap-3.5 sm:gap-4">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.title}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.05 }}
-              viewport={{ once: true }}
-              className={`rounded-xl border p-4 transition-all ${
-                isDark
-                  ? 'bg-slate-900/60 border-slate-800/90 shadow-md shadow-black/25'
-                  : 'bg-white/85 border-sky-100 shadow-sm shadow-sky-900/5'
-              } backdrop-blur-sm`}
-            >
-              {/* Header: Title & Optional Stars */}
-              <div className="flex items-start justify-between gap-2.5 mb-1.5">
-                <h3
-                  className={`text-sm sm:text-base font-bold tracking-tight leading-snug ${
-                    isDark ? 'text-slate-100' : 'text-slate-850'
-                  }`}
+        {showRepos ? (
+          <>
+            <div className="grid md:hidden grid-cols-1 gap-3.5 sm:gap-4">
+              {projects.map((project, index) => (
+                <motion.div
+                  key={project.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.05 }}
+                  viewport={{ once: true }}
+                  className={`rounded-xl border p-4 transition-all ${
+                    isDark
+                      ? 'bg-slate-900/60 border-slate-800/90 shadow-md shadow-black/25'
+                      : 'bg-white/85 border-sky-100 shadow-sm shadow-sky-900/5'
+                  } backdrop-blur-sm`}
                 >
-                  {project.title}
-                </h3>
-                {project.stars > 0 && (
-                  <span
-                    className={`inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-full shrink-0 font-medium ${
-                      isDark
-                        ? 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
-                        : 'bg-amber-50 text-amber-700 border border-amber-200'
-                    }`}
-                  >
-                    ★ {project.stars}
-                  </span>
-                )}
-              </div>
-
-              {/* Description */}
-              <p
-                className={`text-xs mb-2.5 line-clamp-2 leading-relaxed ${
-                  isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
-                }`}
-              >
-                {project.description}
-              </p>
-
-              {/* Tech Tags */}
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                {project.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className={`px-2 py-0.5 text-[10px] font-mono rounded-md border ${
-                      isDark
-                        ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40'
-                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    }`}
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Action Buttons */}
-              <div
-                className={`flex items-center gap-2.5 pt-2.5 border-t ${
-                  isDark ? 'border-slate-800/80' : 'border-slate-100'
-                }`}
-              >
-                {project.url && (
-                  <a
-                    href={project.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      isDark
-                        ? 'bg-slate-800/70 hover:bg-slate-700 text-slate-200 border border-slate-700/60'
-                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
-                    }`}
-                  >
-                    <Github className="w-3.5 h-3.5" />
-                    <span>Code</span>
-                  </a>
-                )}
-                {project.demoUrl && (
-                  <a
-                    href={project.demoUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
-                      isDark
-                        ? 'bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/30'
-                        : 'bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200'
-                    }`}
-                  >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    <span>Live Demo</span>
-                  </a>
-                )}
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Desktop View - Grid Layout */}
-        <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
-          {projects.map((project, index) => (
-            <motion.div
-              key={project.title}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: index * 0.1 }}
-              viewport={{ once: true }}
-              whileHover={{ y: -6 }}
-              className={`group relative ${
-                isDark 
-                  ? 'bg-slate-900/50 border-slate-800 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.08)]' 
-                  : 'bg-white/70 border-gray-200 hover:border-sky-300 hover:shadow-[0_0_30px_rgba(14,165,233,0.12)]'
-              } backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all`}
-            >
-              {/* Image Placeholder */}
-              <div className="relative h-28 sm:h-32 md:h-36 flex items-center justify-center overflow-hidden">
-                <div className={`absolute inset-0 ${
-                  isDark ? 'bg-slate-800/80' : 'bg-slate-100'
-                } transition-colors`} />
-                <FolderOpen className={`w-10 h-10 ${isDark ? 'text-[#D4A853]' : 'text-slate-700'} relative z-10 transition-transform group-hover:scale-110`} />
-              </div>
-
-              {/* Content */}
-              <div className="p-3.5 sm:p-4 md:p-4.5">
-                <h3 className={`text-base sm:text-lg md:text-xl font-bold mb-1.5 transition-colors ${
-                  isDark 
-                    ? 'text-slate-100 group-hover:text-[#D4A853]' 
-                    : 'text-slate-800 group-hover:text-slate-900'
-                }`}>
-                  {project.title}
-                </h3>
-                <p className={`text-xs sm:text-sm mb-2.5 sm:mb-3 line-clamp-2 sm:line-clamp-3 transition-colors ${
-                  isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
-                }`}>
-                  {project.description}
-                </p>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-1.5 mb-2.5 sm:mb-3">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className={`px-2 sm:px-2.5 py-0.5 text-[11px] sm:text-xs ${
-                        isDark 
-                          ? 'bg-emerald-950/50 text-emerald-400 border-emerald-800/50' 
-                          : 'bg-green-50 text-green-700 border-green-200'
-                      } rounded-full border`}
+                  {/* Header: Title & Optional Stars */}
+                  <div className="flex items-start justify-between gap-2.5 mb-1.5">
+                    <h3
+                      className={`text-sm sm:text-base font-bold tracking-tight leading-snug ${
+                        isDark ? 'text-slate-100' : 'text-slate-850'
+                      }`}
                     >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
+                      {project.title}
+                    </h3>
+                    {showStars && project.stars > 0 && (
+                      <span
+                        className={`inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-full shrink-0 font-medium ${
+                          isDark
+                            ? 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
+                            : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}
+                      >
+                        ★ {project.stars}
+                      </span>
+                    )}
+                  </div>
 
-                {/* Links */}
-                <div className="flex gap-3 sm:gap-4">
-                  {project.url && (
-                    <motion.a
-                      href={project.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`flex items-center gap-1.5 text-xs sm:text-sm ${
-                        isDark 
-                          ? 'text-gray-300 hover:text-white' 
-                          : 'text-gray-600 hover:text-gray-900'
-                      } transition-colors`}
-                    >
-                      <Github className="w-3.5 h-3.5" />
-                      Code
-                    </motion.a>
+                  {/* Description */}
+                  <p
+                    className={`text-xs mb-2.5 line-clamp-2 leading-relaxed ${
+                      isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
+                    }`}
+                  >
+                    {project.description}
+                  </p>
+
+                  {/* Tech Tags */}
+                  {showTags && project.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-3">
+                      {project.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className={`px-2 py-0.5 text-[10px] font-mono rounded-md border ${
+                            isDark
+                              ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40'
+                              : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          }`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
                   )}
-                  {project.demoUrl && (
-                    <motion.a
-                      href={project.demoUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className={`flex items-center gap-1.5 text-xs sm:text-sm ${
-                        isDark 
-                          ? 'text-gray-300 hover:text-white' 
-                          : 'text-gray-600 hover:text-gray-900'
-                      } transition-colors`}
-                    >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                      Live Demo
-                    </motion.a>
-                  )}
-                </div>
-              </div>
 
-              {/* Hover Overlay */}
-              <div className={`absolute inset-0 bg-gradient-to-t ${
-                isDark ? 'from-white/10' : 'from-sky-300/15'
-              } to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
-            </motion.div>
-          ))}
-        </div>
+                  {/* Action Buttons */}
+                  <div
+                    className={`flex items-center gap-2.5 pt-2.5 border-t ${
+                      isDark ? 'border-slate-800/80' : 'border-slate-100'
+                    }`}
+                  >
+                    {project.url && (
+                      <a
+                        href={project.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          isDark
+                            ? 'bg-slate-800/70 hover:bg-slate-700 text-slate-200 border border-slate-700/60'
+                            : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                        }`}
+                      >
+                        <Github className="w-3.5 h-3.5" />
+                        <span>Code</span>
+                      </a>
+                    )}
+                    {project.demoUrl && (
+                      <a
+                        href={project.demoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                          isDark
+                            ? 'bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/30'
+                            : 'bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200'
+                        }`}
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>Live Demo</span>
+                      </a>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Desktop View - Grid Layout */}
+            <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 md:gap-6">
+              {projects.map((project, index) => (
+                <motion.div
+                  key={project.title}
+                  initial={{ opacity: 0, y: 50 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  whileHover={{ y: -6 }}
+                  className={`group relative ${
+                    isDark 
+                      ? 'bg-slate-900/50 border-slate-800 hover:border-white/30 hover:shadow-[0_0_30px_rgba(255,255,255,0.08)]' 
+                      : 'bg-white/70 border-gray-200 hover:border-sky-300 hover:shadow-[0_0_30px_rgba(14,165,233,0.12)]'
+                  } backdrop-blur-sm rounded-2xl overflow-hidden border shadow-xl transition-all`}
+                >
+                  {/* Image Placeholder */}
+                  <div className="relative h-28 sm:h-32 md:h-36 flex items-center justify-center overflow-hidden">
+                    <div className={`absolute inset-0 ${
+                      isDark ? 'bg-slate-800/80' : 'bg-slate-100'
+                    } transition-colors`} />
+                    <FolderOpen className={`w-10 h-10 ${isDark ? 'text-[#D4A853]' : 'text-slate-700'} relative z-10 transition-transform group-hover:scale-110`} />
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-3.5 sm:p-4 md:p-4.5">
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <h3 className={`text-base sm:text-lg md:text-xl font-bold transition-colors ${
+                        isDark 
+                          ? 'text-slate-100 group-hover:text-[#D4A853]' 
+                          : 'text-slate-800 group-hover:text-slate-900'
+                      }`}>
+                        {project.title}
+                      </h3>
+                      {showStars && project.stars > 0 && (
+                        <span className={`text-xs font-mono px-2 py-0.5 rounded-full shrink-0 font-medium ${
+                          isDark ? 'bg-amber-950/40 text-amber-300 border border-amber-800/40' : 'bg-amber-50 text-amber-700 border border-amber-200'
+                        }`}>
+                          ★ {project.stars}
+                        </span>
+                      )}
+                    </div>
+                    <p className={`text-xs sm:text-sm mb-2.5 sm:mb-3 line-clamp-2 sm:line-clamp-3 transition-colors ${
+                      isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
+                    }`}>
+                      {project.description}
+                    </p>
+
+                    {/* Tags */}
+                    {showTags && project.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5 mb-2.5 sm:mb-3">
+                        {project.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className={`px-2 sm:px-2.5 py-0.5 text-[11px] sm:text-xs ${
+                              isDark 
+                                ? 'bg-emerald-950/50 text-emerald-400 border-emerald-800/50' 
+                                : 'bg-green-50 text-green-700 border-green-200'
+                            } rounded-full border`}
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Links */}
+                    <div className="flex gap-3 sm:gap-4">
+                      {project.url && (
+                        <motion.a
+                          href={project.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`flex items-center gap-1.5 text-xs sm:text-sm ${
+                            isDark 
+                              ? 'text-gray-300 hover:text-white' 
+                              : 'text-gray-600 hover:text-gray-900'
+                          } transition-colors`}
+                        >
+                          <Github className="w-3.5 h-3.5" />
+                          Code
+                        </motion.a>
+                      )}
+                      {project.demoUrl && (
+                        <motion.a
+                          href={project.demoUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className={`flex items-center gap-1.5 text-xs sm:text-sm ${
+                            isDark 
+                              ? 'text-blue-400 hover:text-blue-300' 
+                              : 'text-blue-600 hover:text-blue-700'
+                          } transition-colors`}
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          Live Demo
+                        </motion.a>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Hover Overlay */}
+                  <div className={`absolute inset-0 bg-gradient-to-t ${
+                    isDark ? 'from-white/10' : 'from-sky-300/15'
+                  } to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none`} />
+                </motion.div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className={`p-8 rounded-2xl border text-center ${isDark ? 'bg-slate-900/40 border-slate-800 text-slate-400' : 'bg-slate-50 border-slate-200 text-slate-500'}`}>
+            <p className="text-xs font-mono">Projects display temporarily hidden via Admin Layout Manager.</p>
+          </div>
+        )}
 
         {/* ─── View All Projects CTA ────────────────────────────────────────── */}
         <motion.div
