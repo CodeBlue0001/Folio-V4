@@ -1,8 +1,16 @@
 // ─── Admin Authentication & Session Management ─────────────────────────────
 
-const ADMIN_TOKEN_KEY = 'folio_admin_auth_token';
-const ADMIN_SESSION_EXPIRES = 'folio_admin_auth_expires';
-const DEFAULT_FALLBACK_PASSWORD = 'admin2026';
+const ADMIN_TOKEN_KEY = (import.meta as any).env?.VITE_ADMIN_TOKEN_KEY || 'folio_admin_auth_token';
+const ADMIN_SESSION_EXPIRES = (import.meta as any).env?.VITE_ADMIN_SESSION_EXPIRES || 'folio_admin_auth_expires';
+
+/**
+ * Retrieve admin password from Vite environment variables with sanitization
+ */
+const getEnvPassword = (): string => {
+  const env = (import.meta as any).env || {};
+  const raw = env.VITE_ADMIN_PASSWORD || env.DEFAULT_FALLBACK_PASSWORD || env.ADMIN_PASSWORD || 'DS2026';
+  return raw ? String(raw).trim().replace(/^['"]|['";\s]+$/g, '') : '';
+};
 
 export interface AdminAuthState {
   isAuthenticated: boolean;
@@ -33,10 +41,11 @@ export const isUserAdminAuthenticated = (): boolean => {
 
 /**
  * Perform login against the backend /api/admin/login endpoint,
- * with client-side fallback for static deployments.
+ * with client-side fallback using configured env password.
  */
 export const adminLogin = async (password: string): Promise<{ success: boolean; error?: string }> => {
-  if (!password || !password.trim()) {
+  const cleanPassword = password ? password.trim() : '';
+  if (!cleanPassword) {
     return { success: false, error: 'Password is required' };
   }
 
@@ -45,7 +54,7 @@ export const adminLogin = async (password: string): Promise<{ success: boolean; 
     const res = await fetch('/api/admin/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password }),
+      body: JSON.stringify({ password: cleanPassword }),
     });
 
     if (res.ok) {
@@ -54,16 +63,14 @@ export const adminLogin = async (password: string): Promise<{ success: boolean; 
         saveAdminSession(data.token);
         return { success: true };
       }
-    } else if (res.status === 401) {
-      return { success: false, error: 'Invalid administrator credentials' };
     }
   } catch {
     // Backend offline or running purely as static bundle
   }
 
-  // 2. Client-side fallback check (configured via VITE_ADMIN_PASSWORD)
-  const envPass = (import.meta as any).env?.VITE_ADMIN_PASSWORD || DEFAULT_FALLBACK_PASSWORD;
-  if (password === envPass) {
+  // 2. Client-side fallback check (configured via VITE_ADMIN_PASSWORD / env)
+  const envPass = getEnvPassword();
+  if (envPass && cleanPassword === envPass) {
     const fallbackToken = `client_admin_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
     saveAdminSession(fallbackToken);
     return { success: true };

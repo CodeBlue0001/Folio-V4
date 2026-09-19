@@ -4,6 +4,7 @@ import { Award, ExternalLink, Sparkles, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { fetchLeetCodeStats, type LeetCodeFullProfile } from '../data/achievementsData';
 import { LeetCodeSolvedCard } from './ui/LeetCodeSolvedCard';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
 
 interface AchievementsSectionProps {
   isDark?: boolean;
@@ -46,6 +47,8 @@ const AnimatedCounter = ({ value, duration = 2000, suffix = '' }: { value: numbe
 
 // ─── Main Component ────────────────────────────────────────────────────────────
 export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps) => {
+  const { getThemeColors } = usePortfolioContent();
+  const { headingColor } = getThemeColors(isDark);
   const [lcData, setLcData] = useState<LeetCodeFullProfile | null>(null);
   const [lcLoading, setLcLoading] = useState(true);
   const [lcError, setLcError] = useState<string | null>(null);
@@ -98,13 +101,13 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
             </span>
           </div>
 
-          <h2 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-3 tracking-tight ${isDark
-            ? 'text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-orange-400'
-            : 'text-slate-900'
-            }`}>
+          <h2
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-extrabold mb-2 sm:mb-3 tracking-tight transition-colors"
+            style={{ color: headingColor }}
+          >
             Achievements & Badges
           </h2>
-          <p className={`max-w-xl mx-auto text-xs sm:text-sm md:text-base ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          <p className={`max-w-xl mx-auto text-xs sm:text-sm md:text-base ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'}`}>
             Real-time coding stats from LeetCode, cloud certifications, and competitive programming milestones.
           </p>
         </motion.div>
@@ -116,18 +119,16 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
           transition={{ duration: 0.6, delay: 0.1 }}
           viewport={{ once: true }}
           className={`rounded-2xl border p-4 sm:p-5 md:p-6 mb-8 backdrop-blur-xl relative overflow-hidden ${isDark
-            ? 'bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-800/40 border-slate-700/60'
-            : 'bg-gradient-to-br from-white/90 via-white/80 to-slate-50/90 border-slate-200 shadow-xl'
+            ? 'bg-slate-900/70 border-slate-800'
+            : 'bg-white/90 border-slate-200 shadow-xl'
             }`}
         >
-          {/* Decorative glow blobs */}
-          <div className="absolute -top-20 -right-20 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
-
           {/* Header */}
           <div className="flex items-center justify-between mb-4 sm:mb-5 relative z-10">
             <div className="flex items-center gap-2.5 sm:gap-3">
-              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 flex items-center justify-center">
+              <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center shadow-md ${
+                isDark ? 'bg-slate-800 border border-slate-700 text-[#D4A853]' : 'bg-slate-100 border border-slate-200 text-slate-800'
+              }`}>
                 <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
                   <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" />
                 </svg>

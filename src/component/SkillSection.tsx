@@ -4,6 +4,7 @@ import { BrainCircuit, Lightbulb, Hexagon, X, ExternalLink } from 'lucide-react'
 import { GitHubActivity } from './GitHubActivity';
 import skillsData from '../data/skills.json';
 import skillReposData from '../data/skill_repos.json';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
 
 const skillIcons: Record<string, React.ReactNode> = {
   "TypeScript": (
@@ -110,6 +111,8 @@ interface SkillsSectionProps {
 }
 
 export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
+  const { getThemeColors } = usePortfolioContent();
+  const { headingColor } = getThemeColors(isDark);
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
 
   const skillCategories = [
@@ -178,11 +181,14 @@ export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-10 md:mb-12"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-3 bg-gradient-to-r from-green-500 to-teal-500 bg-clip-text text-transparent font-bold tracking-tight">
+          <h2
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-3 font-bold tracking-tight transition-colors"
+            style={{ color: headingColor }}
+          >
             Skills & Activity
           </h2>
           <p className={`text-xs sm:text-sm md:text-base max-w-xl mx-auto ${
-            isDark ? 'text-gray-400' : 'text-gray-600'
+            isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
           }`}>
             My technical arsenal categorized by proficiency. Click any skill to explore the related repositories!
           </p>
@@ -207,14 +213,18 @@ export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
                   }`}
                 >
                   <div className="flex items-center gap-3 mb-3.5 sm:mb-4">
-                    <div className={`p-2 sm:p-2.5 rounded-xl bg-gradient-to-br ${category.color} text-white shadow-md shrink-0 w-fit`}>
+                    <div className={`p-2 sm:p-2.5 rounded-xl shadow-md shrink-0 w-fit ${
+                      isDark ? 'bg-slate-800 border border-slate-700 text-[#D4A853]' : 'bg-slate-100 border border-slate-200 text-slate-800'
+                    }`}>
                       <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
                     </div>
                     <div>
-                      <h3 className={`text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r ${category.color} bg-clip-text text-transparent`}>
+                      <h3 className={`text-lg sm:text-xl md:text-2xl font-bold ${
+                        isDark ? 'text-slate-100' : 'text-slate-800'
+                      }`}>
                         {category.title}
                       </h3>
-                      <p className={`text-xs sm:text-sm mt-0.5 transition-colors ${isDark ? 'text-slate-400 group-hover:text-slate-350' : 'text-slate-650 group-hover:text-slate-750'}`}>
+                      <p className={`text-xs sm:text-sm mt-0.5 transition-colors ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                         {category.description}
                       </p>
                     </div>

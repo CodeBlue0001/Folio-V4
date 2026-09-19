@@ -1,30 +1,24 @@
 import { motion } from 'framer-motion';
 import { Card } from './ui/card';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
+
+import { useState, useEffect } from 'react';
 
 interface AboutSectionProps {
   isDark?: boolean;
 }
 
 export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
+  const { content, getThemeColors } = usePortfolioContent();
+  const [imageError, setImageError] = useState(false);
   const features: { icon: any; title: string; description: string }[] = [];
 
-  const timelineItems = [
-    {
-      year: "2025 - Present",
-      title: "B.Tech CSE Student",
-      description: "Pursuing Computer Science at Narula Institute of Technology, Kolkata."
-    },
-    {
-      year: "2025",
-      title: "Diploma in CS",
-      description: "Graduated from Central Calcutta Polytechnic with 86.6%."
-    },
-    {
-      year: "Experience",
-      title: "Web Dev & AI/ML Intern",
-      description: "Interned at YCSAS Pvt. Ltd. (Web) and Codsoft Pvt. Ltd. (AI & ML)."
-    }
-  ];
+  const themeColors = getThemeColors(isDark);
+  const headingColor = themeColors.headingColor;
+
+  useEffect(() => {
+    setImageError(false);
+  }, [content.about.profileImage]);
 
   return (
     <section id="about" className={`relative min-h-screen flex items-center justify-center py-12 sm:py-16 md:py-20 px-4 md:px-6 overflow-hidden ${isDark
@@ -69,13 +63,15 @@ export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-12 md:mb-16"
         >
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-3 sm:mb-4 md:mb-6 bg-gradient-to-r from-yellow-500 to-orange-500 bg-clip-text text-transparent font-bold tracking-tight">
-            About Me
+          <h2
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl mb-3 sm:mb-4 md:mb-6 font-bold tracking-tight transition-colors"
+            style={{ color: headingColor }}
+          >
+            {content.about.heading}
           </h2>
-          <p className={`text-sm sm:text-base md:text-lg lg:text-xl max-w-3xl mx-auto ${isDark ? 'text-gray-300' : 'text-gray-700'
+          <p className={`text-sm sm:text-base md:text-lg lg:text-xl max-w-3xl mx-auto ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
             }`}>
-            Hello! I'm Dipayan Sardar, a B.Tech CSE student, Web Developer, and Vibe Coder.
-            I love creating exceptional digital experiences that combine beautiful design with powerful functionality.
+            {content.about.bio}
           </p>
         </motion.div>
 
@@ -95,9 +91,12 @@ export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
                 }`}>Journey</h3>
               <div className="relative">
                 {/* Timeline line */}
-                <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-amber-400 to-green-400" />
+                <div
+                  className="absolute left-4 top-0 bottom-0 w-0.5 transition-colors"
+                  style={{ backgroundColor: `${headingColor}60` }}
+                />
 
-                {timelineItems.map((item, index) => (
+                {content.about.timeline.map((item, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, x: -20 }}
@@ -110,19 +109,22 @@ export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
                     <motion.div
                       animate={{ scale: [1, 1.2, 1] }}
                       transition={{ duration: 2, repeat: Infinity, delay: index * 0.5 }}
-                      className={`absolute left-2.5 w-3 h-3 bg-green-500 rounded-full border-2 ${isDark ? 'border-[#0c1a2e]' : 'border-white'
+                      className={`absolute left-2.5 w-3 h-3 rounded-full border-2 ${isDark ? 'border-[#070f1d]' : 'border-white'
                         }`}
+                      style={{ backgroundColor: headingColor }}
                     />
 
                     <div className={`${isDark
                       ? 'bg-slate-900/50 border-slate-800/80 hover:border-white/20 hover:shadow-[0_0_15px_rgba(255,255,255,0.05)]'
                       : 'bg-white border-slate-200 hover:border-sky-300 hover:shadow-[0_0_15px_rgba(14,165,233,0.08)]'
                       } p-4 rounded-lg border transition-all`}>
-                      <div className={`text-xs sm:text-sm mb-1 ${isDark ? 'text-amber-400' : 'text-green-700'
-                        }`}>{item.year}</div>
-                      <h4 className={`text-base sm:text-lg mb-2 ${isDark ? 'text-slate-200' : 'text-slate-800'
+                      <div
+                        className="text-xs sm:text-sm mb-1 font-semibold transition-colors"
+                        style={{ color: headingColor }}
+                      >{item.year}</div>
+                      <h4 className={`text-base sm:text-lg mb-2 font-bold ${isDark ? 'text-slate-100' : 'text-slate-800'
                         }`}>{item.title}</h4>
-                      <p className={`text-sm ${isDark ? 'text-slate-400' : 'text-slate-600'
+                      <p className={`text-sm ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
                         }`}>{item.description}</p>
                     </div>
                   </motion.div>
@@ -143,17 +145,34 @@ export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
             >
               <div className={`relative overflow-hidden rounded-2xl border-2 ${isDark ? 'border-blue-500/50' : 'border-blue-400/50'
                 } shadow-2xl`}>
-                <div className="relative aspect-square lg:aspect-[4/3]">
-                  {/* <img
-                    src="https://images.unsplash.com/photo-1737575655055-e3967cbefd03?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjBkZXZlbG9wZXIlMjBwb3J0cmFpdHxlbnwxfHx8fDE3NjM3Mjk0NzN8MA&ixlib=rb-4.1.0&q=80&w=1080"
-                    alt="Developer Portrait"
-                    className="w-full h-full object-cover"
-                  /> */}
-                  {/* Overlay gradient */}
-                  <div className={`absolute inset-0 ${isDark
-                    ? 'bg-gradient-to-t from-slate-900/80 via-slate-900/20 to-transparent'
-                    : 'bg-gradient-to-t from-white/60 via-white/10 to-transparent'
-                    }`} />
+                <div className="relative aspect-square lg:aspect-[4/3] bg-slate-900/40">
+                  {content.about.profileImage && !imageError ? (
+                    <img
+                      src={content.about.profileImage}
+                      alt="Dipayan Sardar"
+                      className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
+                      <div className="text-center p-6">
+                        <div className={`w-16 h-16 mx-auto mb-3 rounded-full flex items-center justify-center ${isDark ? 'bg-slate-700/60 text-slate-500' : 'bg-slate-200 text-slate-400'}`}>
+                          <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                        <p className={`text-xs font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Profile Photo Placeholder</p>
+                        <p className={`text-[11px] mt-1 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Upload via Admin Panel</p>
+                      </div>
+                    </div>
+                  )}
+                  {/* Subtle edge gradient that preserves face visibility */}
+                  {content.about.profileImage && !imageError && (
+                    <div className={`absolute inset-0 pointer-events-none ${isDark
+                      ? 'bg-gradient-to-t from-slate-950/50 via-transparent to-transparent'
+                      : 'bg-gradient-to-t from-slate-900/15 via-transparent to-transparent'
+                      }`} />
+                  )}
                 </div>
 
                 {/* Animated border effect */}
@@ -187,7 +206,7 @@ export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
                     } p-4 sm:p-6 rounded-2xl border shadow-xl hover:shadow-2xl transition-all`}
                 >
                   <div className="mb-3 sm:mb-4">
-                    <feature.icon className={`w-8 h-8 sm:w-10 sm:h-10 ${isDark ? 'text-emerald-400' : 'text-green-600'
+                    <feature.icon className={`w-8 h-8 sm:w-10 sm:h-10 ${isDark ? 'text-[#D4A853]' : 'text-slate-800'
                       }`} />
                   </div>
                   <h3 className={`text-base sm:text-lg md:text-xl mb-2 transition-colors ${isDark ? 'text-slate-100 group-hover:text-white group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]' : 'text-slate-800 group-hover:text-sky-600'
@@ -211,12 +230,12 @@ export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
           viewport={{ once: true }}
           className="text-center"
         >
-          <p className={`text-sm sm:text-base md:text-lg max-w-2xl mx-auto ${isDark ? 'text-gray-300' : 'text-gray-700'
+          <p className={`text-sm sm:text-base md:text-lg max-w-2xl mx-auto ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
             }`}>
-            When I'm not coding, you'll find me playing chess, listening to music & audio stories, or reading books.
+            {content.about.hobbies}
           </p>
         </motion.div>
       </div>
     </section>
   );
-};
+};

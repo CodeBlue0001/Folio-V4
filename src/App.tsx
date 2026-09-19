@@ -18,6 +18,7 @@ import { useScrollSpy } from './component/hooks/useScrollSpy';
 import { ScrollProgress } from './component/ScrollProgress';
 import { ArcReactorBackground } from './component/ArcReactorBackground';
 import { useViewerLocation } from './component/hooks/useViewerLocation';
+import { usePortfolioContent } from './component/hooks/usePortfolioContent';
 import { Toaster } from 'sonner';
 
 // Lazy-load ContactSection (contains heavy HoloEarth/Three.js)
@@ -59,6 +60,7 @@ function MainLayout() {
 
   // Collect viewer location IMMEDIATELY on app mount
   const { userLocation, viewers, locationError } = useViewerLocation();
+  const { content } = usePortfolioContent();
 
   // Show/hide scroll-to-top button based on scroll position
   useEffect(() => {
@@ -147,7 +149,7 @@ function MainLayout() {
               transition={{ duration: 3, repeat: Infinity }}
               className={isDark ? 'text-slate-400' : 'text-gray-600'}
             >
-              © {new Date().getFullYear()} Dipayan. Crafted with passion and precision.
+              © {new Date().getFullYear()} {content.footer.text}. Crafted with passion and precision.
             </motion.p>
             
             {/* Footer decorative elements */}
@@ -282,6 +284,8 @@ function App() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setLoading(false);
+      (window as unknown as { __PORTFOLIO_LOADED__?: boolean }).__PORTFOLIO_LOADED__ = true;
+      window.dispatchEvent(new CustomEvent('app-ready'));
     }, 4000);
 
     return () => clearTimeout(timer);

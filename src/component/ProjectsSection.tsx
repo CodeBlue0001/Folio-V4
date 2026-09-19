@@ -1,8 +1,9 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { ExternalLink, Github, FolderOpen, ChevronDown, FolderGit2, ArrowRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ExternalLink, Github, FolderOpen, FolderGit2, ArrowRight } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import projectsData from '../data/projects.json';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
 
 interface ProjectsSectionProps {
   isDark?: boolean;
@@ -30,8 +31,9 @@ const DEFAULT_GRADIENTS = [
 ];
 
 export const ProjectsSection = ({ isDark = true }: ProjectsSectionProps) => {
-  const [isOpenMobile, setIsOpenMobile] = useState(false);
-  
+  const { getThemeColors } = usePortfolioContent();
+  const { headingColor } = getThemeColors(isDark);
+
   const [projects, setProjects] = useState<ProjectItem[]>(() => {
     try {
       const cached = localStorage.getItem("_gh_repos");
@@ -105,155 +107,120 @@ export const ProjectsSection = ({ isDark = true }: ProjectsSectionProps) => {
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-10 md:mb-12"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-3 bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent font-bold tracking-tight">
+          <h2
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-3 font-bold tracking-tight transition-colors"
+            style={{ color: headingColor }}
+          >
             Featured Projects
           </h2>
           <p className={`text-xs sm:text-sm md:text-base max-w-2xl mx-auto ${
-            isDark ? 'text-gray-300' : 'text-gray-700'
+            isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
           }`}>
             A showcase of my recent work and creative solutions
           </p>
         </motion.div>
 
-        {/* Mobile View - Collapsible Box */}
-        <div className="block md:hidden">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.5 }}
-            viewport={{ once: true }}
-            className={`${
-              isDark 
-                ? 'bg-gradient-to-br from-slate-800/80 to-slate-900/80 border-slate-700' 
-                : 'bg-gradient-to-br from-white/90 to-gray-50/90 border-gray-300'
-            } backdrop-blur-sm rounded-2xl border shadow-2xl overflow-hidden`}
-          >
-            {/* Header Button */}
-            <motion.button
-              onClick={() => setIsOpenMobile(!isOpenMobile)}
-              className="w-full p-4 sm:p-5 flex items-center justify-between"
-              whileTap={{ scale: 0.98 }}
+        {/* Mobile View - Clean Minimal Cards (No extra images or accordion button) */}
+        <div className="grid md:hidden grid-cols-1 gap-3.5 sm:gap-4">
+          {projects.map((project, index) => (
+            <motion.div
+              key={project.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: index * 0.05 }}
+              viewport={{ once: true }}
+              className={`rounded-xl border p-4 transition-all ${
+                isDark
+                  ? 'bg-slate-900/60 border-slate-800/90 shadow-md shadow-black/25'
+                  : 'bg-white/85 border-sky-100 shadow-sm shadow-sky-900/5'
+              } backdrop-blur-sm`}
             >
-              <div className="flex items-center gap-3">
-                <motion.div
-                  animate={{ 
-                    scale: [1, 1.1, 1],
-                    rotate: [0, 5, -5, 0]
-                  }}
-                  transition={{ duration: 2, repeat: Infinity }}
+              {/* Header: Title & Optional Stars */}
+              <div className="flex items-start justify-between gap-2.5 mb-1.5">
+                <h3
+                  className={`text-sm sm:text-base font-bold tracking-tight leading-snug ${
+                    isDark ? 'text-slate-100' : 'text-slate-850'
+                  }`}
                 >
-                  <FolderOpen className={`w-5 h-5 ${
-                    isDark ? 'text-amber-400' : 'text-amber-600'
-                  }`} />
-                </motion.div>
-                <div className="text-left">
-                  <h3 className={`text-base font-semibold ${
-                    isDark ? 'text-white' : 'text-gray-900'
-                  }`}>View Projects</h3>
-                  <p className={`text-xs ${
-                    isDark ? 'text-gray-400' : 'text-gray-600'
-                  }`}>{projects.length} projects • Tap to explore</p>
-                </div>
+                  {project.title}
+                </h3>
+                {project.stars > 0 && (
+                  <span
+                    className={`inline-flex items-center gap-1 text-[11px] font-mono px-2 py-0.5 rounded-full shrink-0 font-medium ${
+                      isDark
+                        ? 'bg-amber-950/40 text-amber-300 border border-amber-800/40'
+                        : 'bg-amber-50 text-amber-700 border border-amber-200'
+                    }`}
+                  >
+                    ★ {project.stars}
+                  </span>
+                )}
               </div>
-              <motion.div
-                animate={{ rotate: isOpenMobile ? 180 : 0 }}
-                transition={{ duration: 0.3 }}
+
+              {/* Description */}
+              <p
+                className={`text-xs mb-2.5 line-clamp-2 leading-relaxed ${
+                  isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
+                }`}
               >
-                <ChevronDown className={`w-5 h-5 ${
-                  isDark ? 'text-amber-400' : 'text-amber-600'
-                }`} />
-              </motion.div>
-            </motion.button>
+                {project.description}
+              </p>
 
-            {/* Collapsible Content */}
-            <AnimatePresence>
-              {isOpenMobile && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className={`p-6 pt-0 space-y-4 border-t ${
-                    isDark ? 'border-slate-700' : 'border-gray-300'
-                  }`}>
-                    {projects.map((project, index) => (
-                      <motion.div
-                        key={project.title}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.05 }}
-                        className={`${
-                          isDark 
-                            ? 'bg-slate-900/50 border-slate-700' 
-                            : 'bg-white/70 border-gray-300'
-                        } rounded-xl overflow-hidden border`}
-                      >
-                        {/* Image Placeholder */}
-                        <div className="relative h-24 sm:h-28 flex items-center justify-center overflow-hidden">
-                          <div className={`absolute inset-0 bg-gradient-to-br ${project.gradient} ${
-                            isDark ? 'opacity-90' : 'opacity-80'
-                          }`} />
-                          <FolderOpen className="w-8 h-8 text-white/50 relative z-10" />
-                        </div>
+              {/* Tech Tags */}
+              <div className="flex flex-wrap gap-1.5 mb-3">
+                {project.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className={`px-2 py-0.5 text-[10px] font-mono rounded-md border ${
+                      isDark
+                        ? 'bg-emerald-950/40 text-emerald-400 border-emerald-800/40'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    }`}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
 
-                        {/* Content */}
-                        <div className="p-3 sm:p-3.5">
-                          <h4 className={`text-sm font-semibold mb-1 ${
-                            isDark ? 'text-white' : 'text-gray-900'
-                          }`}>
-                            {project.title}
-                          </h4>
-                          <p className={`text-[11px] mb-2 line-clamp-2 ${
-                            isDark ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            {project.description}
-                          </p>
-
-                          {/* Tags */}
-                          <div className="flex flex-wrap gap-1 mb-2.5">
-                            {project.tags.map((tag) => (
-                              <span
-                                key={tag}
-                                className={`px-2 py-0.5 text-[10px] ${
-                                  isDark 
-                                    ? 'bg-emerald-950/50 text-emerald-400 border-emerald-800/50' 
-                                    : 'bg-green-50 text-green-700 border-green-200'
-                                } rounded-full border`}
-                              >
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-
-                          {/* Links */}
-                          <div className="flex gap-3">
-                            {project.url && (
-                              <a href={project.url} target="_blank" rel="noreferrer" className={`flex items-center gap-1.5 text-xs hover:underline ${
-                                isDark ? 'text-gray-300' : 'text-gray-600'
-                              }`}>
-                                <Github className="w-3 h-3" />
-                                Code
-                              </a>
-                            )}
-                            {project.demoUrl && (
-                              <a href={project.demoUrl} target="_blank" rel="noreferrer" className={`flex items-center gap-1.5 text-xs hover:underline ${
-                                isDark ? 'text-gray-300' : 'text-gray-600'
-                              }`}>
-                                <ExternalLink className="w-3 h-3" />
-                                Demo
-                              </a>
-                            )}
-                          </div>
-                        </div>
-                      </motion.div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
+              {/* Action Buttons */}
+              <div
+                className={`flex items-center gap-2.5 pt-2.5 border-t ${
+                  isDark ? 'border-slate-800/80' : 'border-slate-100'
+                }`}
+              >
+                {project.url && (
+                  <a
+                    href={project.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      isDark
+                        ? 'bg-slate-800/70 hover:bg-slate-700 text-slate-200 border border-slate-700/60'
+                        : 'bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200'
+                    }`}
+                  >
+                    <Github className="w-3.5 h-3.5" />
+                    <span>Code</span>
+                  </a>
+                )}
+                {project.demoUrl && (
+                  <a
+                    href={project.demoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                      isDark
+                        ? 'bg-sky-500/15 hover:bg-sky-500/25 text-sky-400 border border-sky-500/30'
+                        : 'bg-sky-50 hover:bg-sky-100 text-sky-600 border border-sky-200'
+                    }`}
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    <span>Live Demo</span>
+                  </a>
+                )}
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {/* Desktop View - Grid Layout */}
@@ -274,23 +241,23 @@ export const ProjectsSection = ({ isDark = true }: ProjectsSectionProps) => {
             >
               {/* Image Placeholder */}
               <div className="relative h-28 sm:h-32 md:h-36 flex items-center justify-center overflow-hidden">
-                <div className={`absolute inset-0 bg-gradient-to-br ${project.gradient} ${
-                  isDark ? 'opacity-90' : 'opacity-80'
-                } group-hover:opacity-100 transition-opacity`} />
-                <FolderOpen className="w-10 h-10 text-white/50 relative z-10 transition-transform group-hover:scale-110" />
+                <div className={`absolute inset-0 ${
+                  isDark ? 'bg-slate-800/80' : 'bg-slate-100'
+                } transition-colors`} />
+                <FolderOpen className={`w-10 h-10 ${isDark ? 'text-[#D4A853]' : 'text-slate-700'} relative z-10 transition-transform group-hover:scale-110`} />
               </div>
 
               {/* Content */}
               <div className="p-3.5 sm:p-4 md:p-4.5">
                 <h3 className={`text-base sm:text-lg md:text-xl font-bold mb-1.5 transition-colors ${
                   isDark 
-                    ? 'text-slate-100 group-hover:text-white group-hover:drop-shadow-[0_0_6px_rgba(255,255,255,0.6)]' 
-                    : 'text-slate-800 group-hover:text-sky-600'
+                    ? 'text-slate-100 group-hover:text-[#D4A853]' 
+                    : 'text-slate-800 group-hover:text-slate-900'
                 }`}>
                   {project.title}
                 </h3>
                 <p className={`text-xs sm:text-sm mb-2.5 sm:mb-3 line-clamp-2 sm:line-clamp-3 transition-colors ${
-                  isDark ? 'text-slate-400 group-hover:text-slate-350' : 'text-slate-600 group-hover:text-slate-700'
+                  isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
                 }`}>
                   {project.description}
                 </p>

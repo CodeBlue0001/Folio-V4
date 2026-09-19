@@ -886,7 +886,7 @@ export default function GitHubProjects() {
 
           <h1 className={`text-4xl sm:text-5xl md:text-6xl font-black leading-tight tracking-tight mb-4 ${textPri}`}>
             All Projects &amp;{" "}
-            <span className={`text-transparent bg-clip-text ${isDark ? "bg-gradient-to-r from-indigo-400 to-violet-400" : "bg-gradient-to-r from-amber-500 to-orange-500"}`}>
+            <span className={isDark ? "text-[#D4A853]" : "text-slate-800"}>
               Repositories
             </span>
           </h1>

@@ -1,9 +1,7 @@
 import { motion } from 'framer-motion';
 import { Mail, MapPin, Phone, Github, Linkedin } from 'lucide-react';
-// import { useState } from 'react';
-// import { Send, CheckCircle, Loader2 } from 'lucide-react';
 import { HoloEarth } from './HoloEarth';
-// import { toast } from 'sonner';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
 
 interface Viewer {
   lat: number;
@@ -19,63 +17,34 @@ interface ContactSectionProps {
 }
 
 export const ContactSection = ({ isDark = true, userLocation, viewers, locationError }: ContactSectionProps) => {
-  /*
-  // Contact Form State & Mail Handler (Commented out as requested)
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    message: '',
-  });
-  const [formStatus, setFormStatus] = useState<'idle' | 'sending' | 'success'>('idle');
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setFormStatus('sending');
-
-    const subject = encodeURIComponent(`Portfolio Contact from ${formData.name}`);
-    const body = encodeURIComponent(
-      `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
-    );
-    const mailtoUrl = `mailto:dipayansardar477@gmail.com?subject=${subject}&body=${body}`;
-
-    setTimeout(() => {
-      window.open(mailtoUrl, '_self');
-      setFormStatus('success');
-      toast.success('Email client opened! Send the email to complete your message.', {
-        duration: 5000,
-      });
-      setTimeout(() => {
-        setFormData({ name: '', email: '', message: '' });
-        setFormStatus('idle');
-      }, 3000);
-    }, 600);
-  };
-  */
+  const { content, getThemeColors } = usePortfolioContent();
+  const themeColors = getThemeColors(isDark);
+  const headingColor = themeColors.headingColor;
 
   const contactInfo = [
     {
       icon: Mail,
       label: 'Email',
-      value: 'dipayansardar477@gmail.com',
-      href: 'mailto:dipayansardar477@gmail.com',
+      value: content.contact.email,
+      href: `mailto:${content.contact.email}`,
     },
     {
       icon: Phone,
       label: 'Phone',
-      value: '+91- 9875357834',
-      href: 'tel:+91 9875357834',
+      value: content.contact.phone,
+      href: `tel:${content.contact.phone.replace(/[^+\d]/g, '')}`,
     },
     {
       icon: MapPin,
       label: 'Location',
-      value: 'Kolkata, West Bengal',
+      value: content.contact.location,
       href: '#',
     },
   ];
 
   const socialLinks = [
-    { icon: Github, label: 'GitHub', href: 'https://github.com/CodeBlue0001' },
-    { icon: Linkedin, label: 'LinkedIn', href: 'https://www.linkedin.com/in/dipayan-sardar-321594307/' },
+    { icon: Github, label: 'GitHub', href: content.contact.github },
+    { icon: Linkedin, label: 'LinkedIn', href: content.contact.linkedin },
   ];
 
   return (
@@ -91,12 +60,15 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
           viewport={{ once: true }}
           className="text-center mb-8 sm:mb-10 md:mb-12"
         >
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-3 bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent font-bold tracking-tight">
-            Get In Touch
+          <h2
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 sm:mb-3 font-bold tracking-tight transition-colors"
+            style={{ color: headingColor }}
+          >
+            {content.contact.heading}
           </h2>
-          <p className={`text-xs sm:text-sm md:text-base max-w-2xl mx-auto ${isDark ? 'text-gray-300' : 'text-gray-700'
+          <p className={`text-xs sm:text-sm md:text-base max-w-2xl mx-auto ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
             }`}>
-            Feel free to reach out directly through email, phone, or social profiles!
+            {content.contact.subtitle}
           </p>
         </motion.div>
 
@@ -175,13 +147,13 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
                     : 'text-gray-600 hover:text-gray-900'
                     } transition-colors`}
                 >
-                  <div className={`p-2 ${isDark ? 'bg-emerald-700/20' : 'bg-emerald-500/20'
+                  <div className={`p-2 ${isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-slate-100 border border-slate-200'
                     } rounded-lg`}>
-                    <info.icon className={`w-4 h-4 ${isDark ? 'text-emerald-400' : 'text-emerald-600'
+                    <info.icon className={`w-4 h-4 ${isDark ? 'text-[#D4A853]' : 'text-slate-700'
                       }`} />
                   </div>
                   <div>
-                    <p className={`text-[11px] sm:text-xs mb-0.5 ${isDark ? 'text-gray-400' : 'text-gray-600'
+                    <p className={`text-[11px] sm:text-xs mb-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'
                       }`}>{info.label}</p>
                     <p className="text-xs sm:text-sm font-medium">{info.value}</p>
                   </div>
@@ -197,7 +169,7 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
             <div>
               <h3 className={`text-lg sm:text-xl font-bold mb-3 sm:mb-4 ${isDark ? 'text-slate-100' : 'text-slate-800'
                 }`}>Follow Me</h3>
-              <p className={`text-xs mb-4 sm:mb-5 ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+              <p className={`text-xs mb-4 sm:mb-5 ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'}`}>
                 Connect with me on GitHub & LinkedIn to explore repositories, projects, and work!
               </p>
               <div className="flex gap-2.5 sm:gap-3">

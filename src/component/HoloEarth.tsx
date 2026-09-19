@@ -347,6 +347,34 @@ function SceneSetup() {
   return null;
 }
 
+/**
+ * Automatically adjusts camera distance based on aspect ratio.
+ * In Three.js, perspective camera FOV is vertical. On mobile/portrait screens,
+ * the horizontal visible width narrows significantly, which previously cut off the globe.
+ * This ensures the entire globe, atmosphere halo, and viewer pins fit completely with comfortable margin on every device.
+ */
+function ResponsiveCamera() {
+  const { camera, size } = useThree();
+
+  useEffect(() => {
+    if (!(camera instanceof THREE.PerspectiveCamera)) return;
+
+    const aspect = size.width / size.height;
+    const baseZ = 5.5;
+    const thresholdAspect = 1.2;
+
+    if (aspect < thresholdAspect) {
+      // Scale camera back proportionally on portrait/narrow screens
+      camera.position.z = baseZ * (thresholdAspect / Math.max(aspect, 0.45));
+    } else {
+      camera.position.z = baseZ;
+    }
+    camera.updateProjectionMatrix();
+  }, [camera, size.width, size.height]);
+
+  return null;
+}
+
 // ════════════════════════════════════════════════════
 //  Rotating globe group
 // ════════════════════════════════════════════════════
@@ -496,12 +524,18 @@ const GEO_JSON_URL =
   'https://raw.githubusercontent.com/martynafford/natural-earth-geojson/master/110m/cultural/ne_110m_admin_0_countries.json';
 
 export const HoloEarth = ({
-  isDark: _isDark = true,
+  isDark = true,
   userLocation = null,
-  // viewers = [],
+  viewers: propViewers,
   locationError = null,
 }: HoloEarthProps) => {
   const [geoData, setGeoData] = useState<GeoJSONCollection | null>(null);
+
+  // Use dynamic viewers from props if provided and non-empty, otherwise fallback to static viewers.json
+  const activeViewers = useMemo(() => {
+    if (propViewers && propViewers.length > 0) return propViewers;
+    return viewers as Viewer[];
+  }, [propViewers]);
 
   // Fetch GeoJSON data (the only thing HoloEarth fetches itself)
   const fetchGeoData = useCallback(async () => {
@@ -520,74 +554,120 @@ export const HoloEarth = ({
 
   return (
     <div
-      className="relative w-full select-none"
-      style={{ height: '520px', minHeight: '360px' }}
+      className="relative w-full select-none h-[350px] sm:h-[420px] md:h-[480px] lg:h-[520px] overflow-hidden"
     >
       {/* Soft background glow */}
       <div
         className="absolute inset-0 pointer-events-none rounded-full"
         style={{
-          background:
-            'radial-gradient(ellipse 70% 70% at 50% 50%, rgba(14,165,233,0.12) 0%, rgba(59,130,246,0.06) 40%, transparent 68%)',
+          background: isDark
+            ? 'radial-gradient(ellipse 70% 70% at 50% 50%, rgba(14,165,233,0.12) 0%, rgba(59,130,246,0.06) 40%, transparent 68%)'
+            : 'radial-gradient(ellipse 70% 70% at 50% 50%, rgba(14,165,233,0.18) 0%, rgba(59,130,246,0.08) 40%, transparent 68%)',
           zIndex: 0,
         }}
       />
 
       <Canvas
         camera={{ position: [0, 0, 5.5], fov: 55 }}
-        style={{ background: 'transparent', zIndex: 1 }}
+        style={{ background: 'transparent', zIndex: 1, touchAction: 'pan-y' }}
         dpr={[1, 2]}
         gl={{ antialias: true, alpha: true }}
       >
         <SceneSetup />
+        <ResponsiveCamera />
         <Starfield numStars={800} />
         <RotatingGlobe
           geoData={geoData}
           userLocation={userLocation}
-          viewers={viewers}
+          viewers={activeViewers}
         />
       </Canvas>
 
       {/* HUD overlay */}
       <div
-        className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-6 pointer-events-none"
+        className="absolute bottom-2 sm:bottom-3.5 left-0 right-0 flex items-center justify-center px-3 pointer-events-none"
         style={{ zIndex: 2 }}
       >
-        <div className="flex items-center gap-2 animate-pulse">
-          <div className="w-2 h-2 rounded-full bg-green-400" />
-          <span className="text-green-400 text-xs font-mono tracking-widest">
-            YOU
-          </span>
-        </div>
+        <div
+          className={`inline-flex items-center justify-center flex-wrap gap-2.5 sm:gap-5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full backdrop-blur-md border shadow-lg transition-all ${
+            isDark
+              ? 'bg-slate-950/70 border-cyan-500/25 shadow-black/40 text-slate-200'
+              : 'bg-white/85 border-sky-200 shadow-sky-900/10 text-slate-800'
+          }`}
+        >
+          {/* YOU */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+            <span
+              className={`text-[10px] sm:text-xs font-mono font-semibold tracking-wider ${
+                isDark ? 'text-emerald-400' : 'text-emerald-600'
+              }`}
+            >
+              YOU
+            </span>
+          </div>
 
-        <div className="flex items-center gap-2">
-          <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
-          <span className="text-cyan-400 text-xs font-mono tracking-widest">
-            {viewers.length} VIEWERS
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
           <div
-            className="w-1 h-1 rounded-full"
-            style={{ background: 'rgba(14,165,233,0.5)' }}
+            className={`w-1 h-1 rounded-full ${
+              isDark ? 'bg-slate-700' : 'bg-slate-300'
+            }`}
           />
-          <span
-            className="text-xs font-mono tracking-widest"
-            style={{ color: 'rgba(14,165,233,0.55)' }}
-          >
-            GLOBAL NETWORK
-          </span>
+
+          {/* VIEWERS */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
+            </span>
+            <span
+              className={`text-[10px] sm:text-xs font-mono font-semibold tracking-wider ${
+                isDark ? 'text-cyan-400' : 'text-cyan-600'
+              }`}
+            >
+              {activeViewers.length} VIEWERS
+            </span>
+          </div>
+
+          <div
+            className={`w-1 h-1 rounded-full ${
+              isDark ? 'bg-slate-700' : 'bg-slate-300'
+            }`}
+          />
+
+          {/* GLOBAL NETWORK */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <div
+              className={`w-1.5 h-1.5 rounded-full ${
+                isDark ? 'bg-sky-400/70' : 'bg-sky-600/70'
+              }`}
+            />
+            <span
+              className={`text-[10px] sm:text-xs font-mono font-semibold tracking-wider ${
+                isDark ? 'text-sky-300/80' : 'text-sky-700/80'
+              }`}
+            >
+              GLOBAL NETWORK
+            </span>
+          </div>
         </div>
       </div>
 
       {/* Location status */}
       {locationError && (
         <div
-          className="absolute top-2 left-0 right-0 flex justify-center pointer-events-none"
+          className="absolute top-2 left-0 right-0 flex justify-center px-4 pointer-events-none"
           style={{ zIndex: 2 }}
         >
-          <span className="text-yellow-400/50 text-xs font-mono">
+          <span
+            className={`text-[10px] sm:text-xs font-mono px-3 py-1 rounded-full backdrop-blur-sm border shadow-sm ${
+              isDark
+                ? 'bg-amber-500/10 text-amber-300 border-amber-500/20'
+                : 'bg-amber-50 text-amber-700 border-amber-200'
+            }`}
+          >
             {locationError}
           </span>
         </div>

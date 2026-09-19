@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
 
 interface NavigationProps {
   activeSection: string;
@@ -12,6 +13,7 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
   const [isOpen, setIsOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
+  const { content } = usePortfolioContent();
 
   // Close mobile menu on click outside
   useEffect(() => {
@@ -70,7 +72,7 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
           </motion.button>
         ))}
         <motion.a
-          href="/Dipayan_Sardar_Resume_2026_sept.pdf"
+          href={`/${content.hero.resumeFileName}`}
           target="_blank"
           rel="noopener noreferrer"
           className={`px-3.5 py-1.5 rounded-full transition-all font-medium text-xs sm:text-sm border flex items-center justify-center ${isDark
@@ -140,7 +142,7 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
             </motion.button>
           ))}
           <motion.a
-            href="Dipayan_Sardar_Resume_2026_sept.pdf"
+            href={`/${content.hero.resumeFileName}`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setIsOpen(false)}

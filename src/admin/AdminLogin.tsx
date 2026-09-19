@@ -152,7 +152,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onSuccess }) => {
           {/* Quick Info Hint */}
           <div className="mt-6 pt-4 border-t border-slate-800/60 text-center">
             <span className="text-[11px] text-slate-500">
-              Default development key: <code className="text-amber-400/80 font-mono bg-amber-500/10 px-1.5 py-0.5 rounded">admin2026</code>
+              Protected console &bull; Configured via <code className="text-amber-400/80 font-mono bg-amber-500/10 px-1.5 py-0.5 rounded">.env</code>
             </span>
           </div>
         </motion.div>

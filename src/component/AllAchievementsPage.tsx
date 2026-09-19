@@ -230,7 +230,7 @@ export const AllAchievementsPage = () => {
             <Sparkles className="w-3.5 h-3.5" />
             <span>Live Stats & Verified Credentials</span>
           </div>
-          <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 tracking-tight ${isDark ? 'text-transparent bg-clip-text bg-gradient-to-r from-white via-amber-200 to-orange-400' : 'text-slate-900'
+          <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 tracking-tight ${isDark ? 'text-[#D4A853]' : 'text-slate-800'
             }`}>
             All Achievements
           </h1>

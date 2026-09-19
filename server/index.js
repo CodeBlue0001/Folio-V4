@@ -18,7 +18,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const DB_FILE = path.join(__dirname, 'viewers.json');
 
@@ -345,13 +346,40 @@ app.delete('/api/achievements/:id', (req, res) => {
 // Admin Authentication
 app.post('/api/admin/login', (req, res) => {
   const { password } = req.body;
-  const configuredPassword = process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'admin2026';
+  let diskEnvPassword = '';
+  try {
+    const envPath = path.join(__dirname, '..', '.env');
+    if (fs.existsSync(envPath)) {
+      const envLines = fs.readFileSync(envPath, 'utf-8').split('\n');
+      for (const line of envLines) {
+        const trimmed = line.trim();
+        if (trimmed.startsWith('#') || !trimmed.includes('=')) continue;
+        const [k, ...v] = trimmed.split('=');
+        const key = k.trim();
+        const val = v.join('=').trim().replace(/^['"]|['";\s]+$/g, '');
+        if (key === 'ADMIN_PASSWORD' || key === 'VITE_ADMIN_PASSWORD' || key === 'DEFAULT_FALLBACK_PASSWORD') {
+          diskEnvPassword = val;
+          break;
+        }
+      }
+    }
+  } catch { }
+
+  const rawPassword =
+    diskEnvPassword ||
+    process.env.ADMIN_PASSWORD ||
+    process.env.VITE_ADMIN_PASSWORD ||
+    process.env.DEFAULT_FALLBACK_PASSWORD ||
+    '';
+  const configuredPassword = rawPassword
+    ? String(rawPassword).trim().replace(/^['"]|['";\s]+$/g, '')
+    : 'DS2026';
   
   if (!password) {
     return res.status(400).json({ error: 'Password is required' });
   }
 
-  if (password === configuredPassword) {
+  if (password.trim() === configuredPassword) {
     // Generate secure session token
     const token = `admin_tok_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     return res.json({
@@ -363,6 +391,178 @@ app.post('/api/admin/login', (req, res) => {
   }
 
   return res.status(401).json({ error: 'Invalid administrator credentials' });
+});
+
+// ─── Portfolio Content CMS API ──────────────────────────────────────────────
+const PORTFOLIO_CONTENT_FILE = path.join(__dirname, 'portfolio_content.json');
+const PUBLIC_DIR = path.join(__dirname, '..', 'public');
+const UPLOADS_DIR = path.join(__dirname, 'uploads');
+const PUBLIC_UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
+
+if (!fs.existsSync(UPLOADS_DIR)) {
+  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+}
+if (!fs.existsSync(PUBLIC_UPLOADS_DIR)) {
+  fs.mkdirSync(PUBLIC_UPLOADS_DIR, { recursive: true });
+}
+
+// Serve uploaded images statically
+app.use('/api/uploads', express.static(UPLOADS_DIR));
+app.use('/uploads', express.static(PUBLIC_UPLOADS_DIR));
+
+const readPortfolioContent = () => {
+  try {
+    if (fs.existsSync(PORTFOLIO_CONTENT_FILE)) {
+      return JSON.parse(fs.readFileSync(PORTFOLIO_CONTENT_FILE, 'utf-8'));
+    }
+  } catch { }
+  return {};
+};
+
+const writePortfolioContent = (data) => {
+  fs.writeFileSync(PORTFOLIO_CONTENT_FILE, JSON.stringify(data, null, 2), 'utf-8');
+};
+
+// Get all portfolio content
+app.get('/api/portfolio-content', (req, res) => {
+  try {
+    const content = readPortfolioContent();
+    res.json(content);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to read portfolio content', details: error.message });
+  }
+});
+
+// Update portfolio content (deep merge)
+app.put('/api/portfolio-content', (req, res) => {
+  try {
+    const existing = readPortfolioContent();
+    const updates = req.body;
+
+    // Deep merge: update only provided keys
+    const deepMerge = (target, source) => {
+      for (const key of Object.keys(source)) {
+        if (
+          source[key] &&
+          typeof source[key] === 'object' &&
+          !Array.isArray(source[key]) &&
+          target[key] &&
+          typeof target[key] === 'object' &&
+          !Array.isArray(target[key])
+        ) {
+          deepMerge(target[key], source[key]);
+        } else {
+          target[key] = source[key];
+        }
+      }
+      return target;
+    };
+
+    const merged = deepMerge({ ...existing }, updates);
+    writePortfolioContent(merged);
+    res.json({ success: true, content: merged });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update portfolio content', details: error.message });
+  }
+});
+
+// Upload profile image (Base64)
+app.post('/api/portfolio-content/upload-image', (req, res) => {
+  try {
+    const { imageData, fileName } = req.body;
+    if (!imageData) {
+      return res.status(400).json({ error: 'imageData is required' });
+    }
+
+    // Robust Base64 extraction
+    const commaIndex = imageData.indexOf(',');
+    const rawBase64 = commaIndex !== -1 ? imageData.slice(commaIndex + 1) : imageData;
+    const cleanBase64 = rawBase64.replace(/[^A-Za-z0-9+/=]/g, '');
+
+    // Determine extension
+    let ext = 'jpg';
+    const mimeMatch = imageData.match(/^data:image\/([a-zA-Z0-9+.-]+);/);
+    if (mimeMatch) {
+      const mime = mimeMatch[1].toLowerCase();
+      if (mime.includes('png')) ext = 'png';
+      else if (mime.includes('webp')) ext = 'webp';
+      else if (mime.includes('svg')) ext = 'svg';
+      else if (mime.includes('gif')) ext = 'gif';
+      else ext = 'jpg';
+    }
+
+    const timestamp = Date.now();
+    const safeName = fileName
+      ? fileName.replace(/[^a-zA-Z0-9_.-]/g, '_')
+      : `profile_${timestamp}.${ext}`;
+    const targetFileName = safeName.endsWith(`.${ext}`) ? safeName : `${safeName}.${ext}`;
+
+    const serverFilePath = path.join(UPLOADS_DIR, targetFileName);
+    const publicFilePath = path.join(PUBLIC_UPLOADS_DIR, targetFileName);
+    const imageBuffer = Buffer.from(cleanBase64, 'base64');
+
+    // Write to server uploads directory
+    fs.writeFileSync(serverFilePath, imageBuffer);
+
+    // Also write to public/uploads directory for direct static serving
+    try {
+      fs.writeFileSync(publicFilePath, imageBuffer);
+    } catch { }
+
+    // Also keep a copy at public/profile.jpg for legacy fallback
+    try {
+      fs.writeFileSync(path.join(PUBLIC_DIR, `profile.${ext}`), imageBuffer);
+    } catch { }
+
+    const imagePath = `/api/uploads/${targetFileName}`;
+
+    // Update content DB with the image path
+    const content = readPortfolioContent();
+    if (!content.about) content.about = {};
+    content.about.profileImage = imagePath;
+    writePortfolioContent(content);
+
+    res.json({ success: true, imagePath });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to upload image', details: error.message });
+  }
+});
+
+// Upload resume PDF (Base64)
+app.post('/api/portfolio-content/upload-resume', (req, res) => {
+  try {
+    const { fileData, fileName } = req.body;
+    if (!fileData) {
+      return res.status(400).json({ error: 'fileData is required' });
+    }
+
+    const commaIndex = fileData.indexOf(',');
+    const rawBase64 = commaIndex !== -1 ? fileData.slice(commaIndex + 1) : fileData;
+    const cleanBase64 = rawBase64.replace(/[^A-Za-z0-9+/=]/g, '');
+
+    const safeName = fileName ? fileName.replace(/[^a-zA-Z0-9_.-]/g, '_') : 'resume.pdf';
+    const targetName = safeName.endsWith('.pdf') ? safeName : `${safeName}.pdf`;
+    const targetPath = path.join(PUBLIC_DIR, targetName);
+    const pdfBuffer = Buffer.from(cleanBase64, 'base64');
+
+    fs.writeFileSync(targetPath, pdfBuffer);
+
+    // Also copy to resume.pdf for the generic link
+    const genericPath = path.join(PUBLIC_DIR, 'resume.pdf');
+    if (targetName !== 'resume.pdf') {
+      fs.copyFileSync(targetPath, genericPath);
+    }
+
+    // Update content DB
+    const content = readPortfolioContent();
+    if (!content.hero) content.hero = {};
+    content.hero.resumeFileName = targetName;
+    writePortfolioContent(content);
+
+    res.json({ success: true, resumePath: `/${targetName}` });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to upload resume', details: error.message });
+  }
 });
 
 // System Diagnostics & Health Status API
@@ -392,7 +592,7 @@ app.get('/api/system/health', (req, res) => {
         leetcodeConfigured: Boolean(process.env.VITE_LEETCODE_USERNAME || process.env.LEETCODE_USERNAME),
         credlyConfigured: Boolean(process.env.VITE_CREDLY_USERNAME),
         gcsbConfigured: Boolean(process.env.VITE_GCSB_PROFILE_ID),
-        adminPasswordCustomized: Boolean(process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD),
+        adminPasswordCustomized: Boolean(process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || process.env.DEFAULT_FALLBACK_PASSWORD),
         port: PORT
       },
       database: {

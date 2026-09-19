@@ -1,12 +1,16 @@
 import { motion } from 'framer-motion';
 import { ThreeBackground } from '../components/ThreeBackground';
 import { ChevronDown } from 'lucide-react';
+import { TypewriterHeading } from './TypewriterHeading';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
 
 interface HeroSectionProps {
   isDark?: boolean;
 }
 
 export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
+  const { content } = usePortfolioContent();
+
   const threeThemes = {
     dark: {
       background: '#07101e',
@@ -44,28 +48,19 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
           className="text-center max-w-5xl"
         >
           <motion.h1
-            className={`text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-4 md:mb-6 ${isDark ? 'text-sky-100/80' : 'text-sky-900/80'
-              }`}
-            animate={{
-              backgroundPosition: ['0%', '100%', '0%'],
-            }}
-            transition={{
-              duration: 5,
-              repeat: Infinity,
-              ease: 'linear',
-            }}
+            className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl mb-4 md:mb-6 tracking-tight min-h-[72px] sm:min-h-[64px] md:min-h-[84px] lg:min-h-[100px] flex items-center justify-center font-bold"
           >
-            Dipayan Sardar
+            <TypewriterHeading isDark={isDark} phrases={content.hero.phrases} />
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
-            className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-6 md:mb-8 max-w-3xl mx-auto ${isDark ? 'text-sky-100/80' : 'text-sky-900/80'
+            className={`text-base sm:text-lg md:text-xl lg:text-2xl mb-6 md:mb-8 max-w-3xl mx-auto ${isDark ? 'text-[#CBD5E1]' : 'text-slate-600'
               }`}
           >
-            Full Stack Developer | Creative Designer | Tech Enthusiast
+            {content.hero.subtitle}
           </motion.p>
 
           <motion.div
@@ -86,7 +81,7 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
               <span className="rainbow-text-effect font-semibold">View Projects</span>
             </motion.button>
             <motion.a
-              href="/resume.pdf"
+              href={`/${content.hero.resumeFileName}`}
               target="_blank"
               rel="noopener noreferrer"
               className={`w-full sm:w-auto px-6 md:px-8 py-3 md:py-4 rounded-full transition-all backdrop-blur-sm font-medium border text-center flex items-center justify-center ${isDark

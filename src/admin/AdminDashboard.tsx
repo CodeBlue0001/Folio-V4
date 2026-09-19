@@ -5,15 +5,17 @@ import {
   Activity,
   LogOut,
   Terminal,
-  ExternalLink
+  ExternalLink,
+  Palette
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { isUserAdminAuthenticated, adminLogout } from './adminAuth';
 import { AdminLogin } from './AdminLogin';
 import { AdminAchievements } from './AdminAchievements';
 import { AdminSystemHealth } from './AdminSystemHealth';
+import { AdminPortfolioEditor } from './AdminPortfolioEditor';
 
-type AdminTab = 'achievements' | 'health';
+type AdminTab = 'achievements' | 'health' | 'editor';
 
 export const AdminDashboard: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => isUserAdminAuthenticated());
@@ -104,6 +106,18 @@ export const AdminDashboard: React.FC = () => {
             <Activity className="w-4 h-4 text-cyan-400" />
             <span>System Health & Diagnostics</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('editor')}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'editor'
+                ? 'bg-violet-500/20 text-violet-300 border border-violet-500/40 shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+            }`}
+          >
+            <Palette className="w-4 h-4 text-violet-400" />
+            <span>Portfolio Editor</span>
+          </button>
         </div>
       </header>
 
@@ -131,6 +145,18 @@ export const AdminDashboard: React.FC = () => {
               transition={{ duration: 0.2 }}
             >
               <AdminSystemHealth />
+            </motion.div>
+          )}
+
+          {activeTab === 'editor' && (
+            <motion.div
+              key="editor"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2 }}
+            >
+              <AdminPortfolioEditor />
             </motion.div>
           )}
         </AnimatePresence>
