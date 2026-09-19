@@ -1,5 +1,9 @@
 {
   "rewrites": [
+    { "source": "/api/portfolio-content/upload-image", "destination": "/api/portfolio-content-upload-image" },
+    { "source": "/api/portfolio-content/upload-resume", "destination": "/api/portfolio-content-upload-resume" },
+    { "source": "/api/portfolio-content", "destination": "/api/portfolio-content" },
+    { "source": "/api/admin/login", "destination": "/api/admin-login" },
     { "source": "/api/leetcode/:username", "destination": "/api/leetcode?username=:username" },
     { "source": "/api/credly/:username", "destination": "/api/credly?username=:username" },
     { "source": "/api/gcsb/:profileId", "destination": "/api/gcsb?profileId=:profileId" },
