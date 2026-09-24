@@ -392,13 +392,14 @@ export const AdminPortfolioEditor: React.FC = () => {
         const result = await res.json();
         const activePath = result.imagePath || data;
         updateField('about', 'profileImage', activePath);
-        showFeedback('success', `Profile image uploaded successfully!`);
+        showFeedback('success', `Profile photo stored in MongoDB GridFS (${result.fileId ? 'ID: ' + result.fileId.slice(-6) : 'success'})`);
         window.dispatchEvent(new CustomEvent('portfolio-content-updated'));
       } else {
-        showFeedback('success', 'Profile image selected! Click "Save All Changes" to persist.');
+        const errorData = await res.json().catch(() => null);
+        showFeedback('error', errorData?.error || 'Failed to upload image to MongoDB GridFS.');
       }
-    } catch {
-      showFeedback('success', 'Profile image selected! Click "Save All Changes" to persist.');
+    } catch (err: any) {
+      showFeedback('error', err?.message || 'Error uploading image to server');
     } finally {
       setIsUploadingImage(false);
     }
@@ -639,7 +640,7 @@ export const AdminPortfolioEditor: React.FC = () => {
             label="Or Image URL / Path"
             value={content.about.profileImage}
             onChange={(v) => updateField('about', 'profileImage', v)}
-            placeholder="/api/uploads/profile.jpg or https://images.unsplash.com/..."
+            placeholder="/api/images/... or https://images.unsplash.com/..."
           />
 
           {/* Visual Preview */}
@@ -649,17 +650,30 @@ export const AdminPortfolioEditor: React.FC = () => {
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Live Display Preview
                 </span>
-                <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                  Active in About Section
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {content.about.profileImage.startsWith('/api/images') && (
+                    <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+                      MongoDB GridFS
+                    </span>
+                  )}
+                  <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                    Active in About Section
+                  </span>
+                </div>
               </div>
               <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden border-2 border-cyan-500/40 shadow-xl shadow-cyan-950/30 bg-slate-900 group">
                 <img
+                  key={content.about.profileImage}
                   src={content.about.profileImage}
                   alt="Profile Preview"
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
+                  onLoad={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'block';
                   }}
                 />
               </div>

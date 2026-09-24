@@ -3,18 +3,46 @@ import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
+import {
+  ImageFile,
+  uploadImageToGridFS,
+  getImageStream,
+  findImage,
+  deleteImageFromGridFS,
+  listGridFSImages,
+  getContentType
+} from './schema.js';
 
-// Securely load environment variables from .env on the server
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Securely load environment variables from .env on the server before connecting
+const rootEnvPath = path.join(__dirname, '..', '.env');
+const localEnvPath = path.join(__dirname, '.env');
 if (typeof process.loadEnvFile === 'function') {
   try {
-    process.loadEnvFile();
+    if (fs.existsSync(rootEnvPath)) {
+      process.loadEnvFile(rootEnvPath);
+    } else if (fs.existsSync(localEnvPath)) {
+      process.loadEnvFile(localEnvPath);
+    }
   } catch {
     // .env not present or running in cloud environment
   }
 }
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Connect to MongoDB (for GridFS image storage)
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/folio';
+mongoose.connect(MONGODB_URI)
+  .then(() => {
+    console.log(`[MongoDB GridFS] Connected to database at ${MONGODB_URI}`);
+    // Run background migration if local images exist
+    setTimeout(migrateExistingImagesToGridFS, 1500);
+  })
+  .catch((err) => {
+    console.error('[MongoDB GridFS] Connection error:', err.message);
+  });
 
 const app = express();
 app.use(cors());
@@ -56,18 +84,18 @@ app.post('/api/locations', (req, res) => {
   if (lat == null || lon == null) {
     return res.status(400).json({ error: 'Missing lat or lon' });
   }
-  
+
   const viewers = readDB();
   const newId = id || `viewer_${Date.now()}`;
-  
+
   // Check if viewer already exists (rough location match or exact id)
   const exists = viewers.find(v => v.id === newId || (Math.abs(v.lat - lat) < 0.01 && Math.abs(v.lon - lon) < 0.01));
-  
+
   if (!exists) {
     viewers.push({ lat, lon, id: newId });
     writeDB(viewers);
   }
-  
+
   res.json({ success: true, viewers });
 });
 
@@ -374,7 +402,7 @@ app.post('/api/admin/login', (req, res) => {
   const configuredPassword = rawPassword
     ? String(rawPassword).trim().replace(/^['"]|['";\s]+$/g, '')
     : 'DS2026';
-  
+
   if (!password) {
     return res.status(400).json({ error: 'Password is required' });
   }
@@ -397,18 +425,126 @@ app.post('/api/admin/login', (req, res) => {
 const PORTFOLIO_CONTENT_FILE = path.join(__dirname, 'portfolio_content.json');
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const UPLOADS_DIR = path.join(__dirname, 'uploads');
-const PUBLIC_UPLOADS_DIR = path.join(PUBLIC_DIR, 'uploads');
 
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
-}
-if (!fs.existsSync(PUBLIC_UPLOADS_DIR)) {
-  fs.mkdirSync(PUBLIC_UPLOADS_DIR, { recursive: true });
-}
+// Helper to migrate any existing local image to MongoDB GridFS on startup
+const migrateExistingImagesToGridFS = async () => {
+  try {
+    const portfolioContent = readPortfolioContent();
+    const currentProfileImage = portfolioContent?.about?.profileImage;
 
-// Serve uploaded images statically
-app.use('/api/uploads', express.static(UPLOADS_DIR));
-app.use('/uploads', express.static(PUBLIC_UPLOADS_DIR));
+    if (fs.existsSync(UPLOADS_DIR)) {
+      const files = fs.readdirSync(UPLOADS_DIR);
+      for (const file of files) {
+        if (file.match(/\.(jpg|jpeg|png|webp|gif|svg)$/i)) {
+          const filePath = path.join(UPLOADS_DIR, file);
+          const existingInGrid = await findImage(file);
+          if (!existingInGrid) {
+            const buffer = fs.readFileSync(filePath);
+            const ext = path.extname(file).slice(1).toLowerCase();
+            const mimeType = ext === 'png' ? 'image/png' : ext === 'webp' ? 'image/webp' : 'image/jpeg';
+            const uploaded = await uploadImageToGridFS({
+              buffer,
+              filename: file,
+              contentType: mimeType,
+              metadata: {
+                originalName: file,
+                migratedFromLocal: true,
+                format: ext,
+                isProfilePhoto: true
+              }
+            });
+            console.log(`[GridFS Migration] Migrated local file ${file} -> MongoDB GridFS (${uploaded._id})`);
+
+            // If current profileImage references this filename, update to GridFS URL
+            if (currentProfileImage && currentProfileImage.includes(file)) {
+              portfolioContent.about.profileImage = `/api/images/${uploaded._id}`;
+              writePortfolioContent(portfolioContent);
+              console.log(`[GridFS Migration] Updated portfolio profileImage to /api/images/${uploaded._id}`);
+            }
+          } else if (currentProfileImage && currentProfileImage.includes(file) && !currentProfileImage.startsWith('/api/images/')) {
+            portfolioContent.about.profileImage = `/api/images/${existingInGrid._id}`;
+            writePortfolioContent(portfolioContent);
+            console.log(`[GridFS Migration] Switched profileImage to GridFS: /api/images/${existingInGrid._id}`);
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('[GridFS Migration] Migration check:', err.message);
+  }
+};
+
+// ─── MongoDB GridFS Image Serving Endpoints ─────────────────────────────────
+
+// Serve images directly from MongoDB GridFS by ObjectId or filename
+app.get('/api/images/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await getImageStream(id);
+    if (!result) {
+      return res.status(404).json({ error: 'Image not found in MongoDB GridFS' });
+    }
+
+    const { stream, file } = result;
+
+    res.setHeader('Content-Type', getContentType(file));
+    if (file.length) {
+      res.setHeader('Content-Length', file.length);
+    }
+    // High performance cache header: 24hr cache with background revalidation
+    res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+
+    stream.on('error', (err) => {
+      console.error('[MongoDB GridFS] Stream error:', err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Error streaming image from GridFS' });
+      }
+    });
+
+    stream.pipe(res);
+  } catch (error) {
+    console.error('[MongoDB GridFS] Retrieval error:', error);
+    res.status(500).json({ error: 'Failed to retrieve image from GridFS', details: error.message });
+  }
+});
+
+// List all stored images in MongoDB GridFS
+app.get('/api/images', async (req, res) => {
+  try {
+    const images = await listGridFSImages();
+    res.json(images);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to list GridFS images', details: error.message });
+  }
+});
+
+// Delete an image from MongoDB GridFS
+app.delete('/api/images/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await deleteImageFromGridFS(id);
+    res.json({ success: true, message: 'Image deleted from MongoDB GridFS' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to delete image from GridFS', details: error.message });
+  }
+});
+
+// Backward compatibility: serve /api/uploads/:filename from GridFS first
+app.get('/api/uploads/:filename', async (req, res, next) => {
+  try {
+    const { filename } = req.params;
+    const result = await getImageStream(filename);
+    if (result) {
+      res.setHeader('Content-Type', getContentType(result.file));
+      if (result.file.length) res.setHeader('Content-Length', result.file.length);
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+      return result.stream.pipe(res);
+    }
+    next();
+  } catch {
+    next();
+  }
+});
 
 const readPortfolioContent = () => {
   try {
@@ -466,8 +602,8 @@ app.put('/api/portfolio-content', (req, res) => {
   }
 });
 
-// Upload profile image (Base64)
-app.post('/api/portfolio-content/upload-image', (req, res) => {
+// Upload profile image directly to MongoDB GridFS (NO LOCAL DISK STORAGE)
+app.post('/api/portfolio-content/upload-image', async (req, res) => {
   try {
     const { imageData, fileName } = req.body;
     if (!imageData) {
@@ -478,17 +614,30 @@ app.post('/api/portfolio-content/upload-image', (req, res) => {
     const commaIndex = imageData.indexOf(',');
     const rawBase64 = commaIndex !== -1 ? imageData.slice(commaIndex + 1) : imageData;
     const cleanBase64 = rawBase64.replace(/[^A-Za-z0-9+/=]/g, '');
+    const imageBuffer = Buffer.from(cleanBase64, 'base64');
 
-    // Determine extension
+    // Determine extension and MIME type
     let ext = 'jpg';
+    let mimeType = 'image/jpeg';
     const mimeMatch = imageData.match(/^data:image\/([a-zA-Z0-9+.-]+);/);
     if (mimeMatch) {
       const mime = mimeMatch[1].toLowerCase();
-      if (mime.includes('png')) ext = 'png';
-      else if (mime.includes('webp')) ext = 'webp';
-      else if (mime.includes('svg')) ext = 'svg';
-      else if (mime.includes('gif')) ext = 'gif';
-      else ext = 'jpg';
+      if (mime.includes('png')) {
+        ext = 'png';
+        mimeType = 'image/png';
+      } else if (mime.includes('webp')) {
+        ext = 'webp';
+        mimeType = 'image/webp';
+      } else if (mime.includes('svg')) {
+        ext = 'svg';
+        mimeType = 'image/svg+xml';
+      } else if (mime.includes('gif')) {
+        ext = 'gif';
+        mimeType = 'image/gif';
+      } else {
+        ext = 'jpg';
+        mimeType = 'image/jpeg';
+      }
     }
 
     const timestamp = Date.now();
@@ -497,34 +646,42 @@ app.post('/api/portfolio-content/upload-image', (req, res) => {
       : `profile_${timestamp}.${ext}`;
     const targetFileName = safeName.endsWith(`.${ext}`) ? safeName : `${safeName}.${ext}`;
 
-    const serverFilePath = path.join(UPLOADS_DIR, targetFileName);
-    const publicFilePath = path.join(PUBLIC_UPLOADS_DIR, targetFileName);
-    const imageBuffer = Buffer.from(cleanBase64, 'base64');
+    // Upload directly to MongoDB GridFS (no local disk writes)
+    const storedFile = await uploadImageToGridFS({
+      buffer: imageBuffer,
+      filename: targetFileName,
+      contentType: mimeType,
+      metadata: {
+        originalName: fileName || targetFileName,
+        format: ext,
+        size: imageBuffer.length,
+        isProfilePhoto: true,
+        uploadedAt: new Date()
+      }
+    });
 
-    // Write to server uploads directory
-    fs.writeFileSync(serverFilePath, imageBuffer);
+    // The image path points to the GridFS streaming endpoint
+    const imagePath = `/api/images/${storedFile._id}`;
 
-    // Also write to public/uploads directory for direct static serving
-    try {
-      fs.writeFileSync(publicFilePath, imageBuffer);
-    } catch { }
-
-    // Also keep a copy at public/profile.jpg for legacy fallback
-    try {
-      fs.writeFileSync(path.join(PUBLIC_DIR, `profile.${ext}`), imageBuffer);
-    } catch { }
-
-    const imagePath = `/api/uploads/${targetFileName}`;
-
-    // Update content DB with the image path
+    // Update content DB with the GridFS image path
     const content = readPortfolioContent();
     if (!content.about) content.about = {};
     content.about.profileImage = imagePath;
     writePortfolioContent(content);
 
-    res.json({ success: true, imagePath });
+    console.log(`[MongoDB GridFS] Image stored successfully: ID=${storedFile._id}, Name=${targetFileName}, Size=${imageBuffer.length} bytes`);
+
+    res.json({
+      success: true,
+      imagePath,
+      fileId: storedFile._id,
+      filename: targetFileName,
+      contentType: mimeType,
+      storage: 'MongoDB GridFS'
+    });
   } catch (error) {
-    res.status(500).json({ error: 'Failed to upload image', details: error.message });
+    console.error('[MongoDB GridFS] Failed to upload image:', error);
+    res.status(500).json({ error: 'Failed to upload image to MongoDB GridFS', details: error.message });
   }
 });
 

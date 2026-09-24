@@ -11,7 +11,7 @@
     "heading": "About Me",
     "bio": "Hello! I'm Dipayan Sardar, a B.Tech CSE student, Web Developer, and Vibe Coder. I love creating exceptional digital experiences that combine beautiful design with powerful functionality.",
     "hobbies": "When I'm not coding, you'll find me playing chess, listening to music & audio stories, or reading books.",
-    "profileImage": "/api/uploads/IMG20250216195248.jpg",
+    "profileImage": "/api/images/6ab56e7f28bc69dc1ea4bcf7",
     "timeline": [
       {
         "year": "2025 - Present",
@@ -65,7 +65,7 @@
       "footer": true
     },
     "achievements": {
-      "showLeetCodeDashboard": true,
+      "showLeetCodeDashboard": false,
       "showLeetCodeStats": false,
       "showLeetCodeBadges": true,
       "showViewAllButton": true

@@ -1,5 +1,7 @@
 {
   "rewrites": [
+    { "source": "/api/images/:id", "destination": "/api/images?id=:id" },
+    { "source": "/api/images", "destination": "/api/images" },
     { "source": "/api/portfolio-content/upload-image", "destination": "/api/portfolio-content-upload-image" },
     { "source": "/api/portfolio-content/upload-resume", "destination": "/api/portfolio-content-upload-resume" },
     { "source": "/api/portfolio-content", "destination": "/api/portfolio-content" },
