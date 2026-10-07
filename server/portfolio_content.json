@@ -5,13 +5,14 @@
       "Welcome to my Portfolio!"
     ],
     "subtitle": "Full Stack Developer | Creative Designer | Tech Enthusiast",
-    "resumeFileName": "Dipayan_Sardar_Resume_2026_sept.pdf"
+    "resumeFileName": "test_admin_resume.pdf",
+    "adminTestKey": "test_value_123"
   },
   "about": {
     "heading": "About Me",
     "bio": "Hello! I'm Dipayan Sardar, a B.Tech CSE student, Web Developer, and Vibe Coder. I love creating exceptional digital experiences that combine beautiful design with powerful functionality.",
     "hobbies": "When I'm not coding, you'll find me playing chess, listening to music & audio stories, or reading books.",
-    "profileImage": "/api/images/6ab56e7f28bc69dc1ea4bcf7",
+    "profileImage": "/api/images/6ac09bc18f46ed6123a10bfe",
     "timeline": [
       {
         "year": "2025 - Present",

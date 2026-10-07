@@ -45,8 +45,8 @@ let gfsBucket = null;
  * @returns {mongoose.mongo.GridFSBucket}
  */
 export const getGridFSBucket = (connection = mongoose.connection) => {
-  const activeConn = (connection && connection.readyState === 1) 
-    ? connection 
+  const activeConn = (connection && connection.readyState === 1)
+    ? connection
     : (mongoose.connection.readyState === 1 ? mongoose.connection : null);
 
   if (!activeConn || !activeConn.db) {
@@ -225,4 +225,184 @@ export const deleteImageFromGridFS = async (id) => {
 export const listGridFSImages = async (limit = 50) => {
   const bucket = getGridFSBucket();
   return await bucket.find({}).sort({ uploadDate: -1 }).limit(limit).toArray();
+};
+
+/**
+ * ─── Admin Authentication Schema & Model ────────────────────────────────────
+ * Persists the administrator password and credentials directly in MongoDB
+ */
+const adminAuthSchema = new mongoose.Schema(
+  {
+    username: { type: String, default: 'admin', unique: true, index: true },
+    password: { type: String, required: true },
+    updatedAt: { type: Date, default: Date.now }
+  },
+  {
+    collection: 'admin_credentials',
+    timestamps: true
+  }
+);
+export const AdminAuth = mongoose.models.AdminAuth || mongoose.model('AdminAuth', adminAuthSchema);
+
+/**
+ * ─── Viewers / Locations Schema & Model ─────────────────────────────────────
+ * Stores live visitor geolocation data in MongoDB
+ */
+const viewerSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    lat: { type: Number, required: true },
+    lon: { type: Number, required: true },
+    createdAt: { type: Date, default: Date.now }
+  },
+  {
+    collection: 'viewers',
+    timestamps: true
+  }
+);
+export const Viewer = mongoose.models.Viewer || mongoose.model('Viewer', viewerSchema);
+
+/**
+ * ─── Achievements Schema & Model ────────────────────────────────────────────
+ * Stores certifications, badges, and honors in MongoDB
+ */
+const achievementSchema = new mongoose.Schema(
+  {
+    id: { type: String, required: true, unique: true, index: true },
+    title: { type: String, required: true },
+    issuer: { type: String },
+    category: { type: String },
+    date: { type: String },
+    description: { type: String },
+    badgeImageUrl: { type: String },
+    iconType: { type: String },
+    verificationUrl: { type: String },
+    featured: { type: Boolean, default: false },
+    skills: [{ type: String }],
+    level: { type: String },
+    updatedAt: { type: Date, default: Date.now }
+  },
+  {
+    collection: 'achievements',
+    strict: false,
+    timestamps: true
+  }
+);
+export const Achievement = mongoose.models.Achievement || mongoose.model('Achievement', achievementSchema);
+
+/**
+ * ─── Portfolio Content Schema & Model ───────────────────────────────────────
+ * Stores all CMS sections (hero, about, contact, theme, visibility) in MongoDB
+ */
+const portfolioContentSchema = new mongoose.Schema(
+  {
+    identifier: { type: String, default: 'main', unique: true, index: true },
+    content: { type: mongoose.Schema.Types.Mixed, required: true },
+    updatedAt: { type: Date, default: Date.now }
+  },
+  {
+    collection: 'portfolio_content',
+    timestamps: true
+  }
+);
+export const PortfolioContent = mongoose.models.PortfolioContent || mongoose.model('PortfolioContent', portfolioContentSchema);
+
+/**
+ * Validates the provided password against the MongoDB database.
+ * If no admin record exists in DB, it verifies against configured env password
+ * and automatically seeds the DB with the password.
+ *
+ * @param {string} password
+ * @returns {Promise<boolean>}
+ */
+export const check_password = async (password) => {
+  try {
+    const cleanPassword = (password || '').trim();
+    if (!cleanPassword) return false;
+
+    // 1. Check if MongoDB connection is ready
+    if (mongoose.connection.readyState === 1) {
+      const adminRecord = await AdminAuth.findOne({ username: 'admin' });
+      if (adminRecord && adminRecord.password) {
+        return adminRecord.password === cleanPassword;
+      }
+
+      // If no admin record exists yet, check fallback and auto-seed in MongoDB
+      const envPassword = (
+        process.env.ADMIN_PASSWORD ||
+        process.env.VITE_ADMIN_PASSWORD ||
+        process.env.DEFAULT_FALLBACK_PASSWORD ||
+        'DS2026'
+      ).trim();
+
+      if (cleanPassword === envPassword) {
+        await AdminAuth.findOneAndUpdate(
+          { username: 'admin' },
+          { password: cleanPassword, updatedAt: new Date() },
+          { upsert: true, new: true }
+        );
+        console.log('[MongoDB AdminAuth] Seeded admin password into MongoDB collection');
+        return true;
+      }
+    } else {
+      // Fallback if DB is connecting or offline
+      const envPassword = (
+        process.env.ADMIN_PASSWORD ||
+        process.env.VITE_ADMIN_PASSWORD ||
+        process.env.DEFAULT_FALLBACK_PASSWORD ||
+        'DS2026'
+      ).trim();
+      return cleanPassword === envPassword;
+    }
+
+    return false;
+  } catch (error) {
+    console.error('[MongoDB AdminAuth] Error checking password:', error.message);
+    const envPassword = (
+      process.env.ADMIN_PASSWORD ||
+      process.env.VITE_ADMIN_PASSWORD ||
+      process.env.DEFAULT_FALLBACK_PASSWORD ||
+      'DS2026'
+    ).trim();
+    return (password || '').trim() === envPassword;
+  }
+};
+
+/**
+ * Saves or updates the admin password in MongoDB.
+ *
+ * @param {string} newPassword
+ * @param {string} [username='admin']
+ * @returns {Promise<Object>}
+ */
+export const save_password = async (newPassword, username = 'admin') => {
+  const cleanPassword = (newPassword || '').trim();
+  if (!cleanPassword) {
+    throw new Error('Password cannot be empty');
+  }
+
+  const updated = await AdminAuth.findOneAndUpdate(
+    { username },
+    { password: cleanPassword, updatedAt: new Date() },
+    { upsert: true, new: true }
+  );
+  console.log(`[MongoDB AdminAuth] Password successfully updated in DB for user "${username}"`);
+  return updated;
+};
+
+/**
+ * Retrieves the current admin password from MongoDB.
+ *
+ * @returns {Promise<string|null>}
+ */
+export const get_password = async () => {
+  try {
+    if (mongoose.connection.readyState === 1) {
+      const record = await AdminAuth.findOne({ username: 'admin' });
+      if (record && record.password) return record.password;
+    }
+  } catch (err) {
+    console.warn('[MongoDB AdminAuth] Error reading password:', err.message);
+  }
+  return process.env.ADMIN_PASSWORD || process.env.VITE_ADMIN_PASSWORD || 'DS2026';
 };

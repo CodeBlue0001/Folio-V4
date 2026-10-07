@@ -1,4 +1,6 @@
-export default function handler(req, res) {
+import { check_password } from '../server/schema.js';
+
+export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
@@ -16,22 +18,20 @@ export default function handler(req, res) {
   }
 
   const { password } = typeof req.body === 'string' ? JSON.parse(req.body) : req.body || {};
-  const configuredPassword =
-    process.env.ADMIN_PASSWORD ||
-    process.env.VITE_ADMIN_PASSWORD ||
-    process.env.DEFAULT_FALLBACK_PASSWORD ||
-    'DS2026';
 
   if (!password) {
     return res.status(400).json({ error: 'Password is required' });
   }
 
-  if (password.trim() === configuredPassword.trim()) {
+  const isValid = await check_password(password);
+
+  if (isValid) {
     const token = `admin_tok_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
     return res.status(200).json({
       success: true,
       token,
       user: 'Administrator',
+      source: 'MongoDB Database',
       message: 'Access granted'
     });
   }

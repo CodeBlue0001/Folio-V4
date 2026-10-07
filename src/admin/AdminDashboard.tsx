@@ -191,8 +191,10 @@ export const AdminDashboard: React.FC = () => {
       {/* Admin Footer */}
       <footer className="relative z-10 border-t border-slate-900 py-6 text-center text-xs text-slate-500">
         <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>Protected Administrative Environment • Folio V4</span>
-          <span className="font-mono text-[11px] text-slate-600">Database bound to src/data/achievements.json</span>
+          <span className="font-mono text-[11px] text-emerald-400/90 flex items-center gap-1.5">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Database: MongoDB (Local Instance: folio)
+          </span>
         </div>
       </footer>
     </div>

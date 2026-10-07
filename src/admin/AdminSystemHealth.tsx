@@ -218,14 +218,23 @@ export const AdminSystemHealth: React.FC = () => {
         <div className="p-5 rounded-2xl border border-slate-800 bg-slate-900/40 backdrop-blur-md">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-semibold text-slate-400">Database Storage</span>
-            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
               <Database className="w-4 h-4" />
             </div>
           </div>
-          <div className="text-xl font-extrabold text-white">
-            {serverHealth?.database?.achievementsCount ?? 'Active'} <span className="text-xs font-normal text-slate-400">records</span>
+          <div className="text-xl font-extrabold text-white flex items-center gap-2">
+            <span>{serverHealth?.database?.provider || 'MongoDB'}</span>
+            <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+              serverHealth?.database?.status === 'connected'
+                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            }`}>
+              {serverHealth?.database?.status === 'connected' ? 'Connected' : 'Offline'}
+            </span>
           </div>
-          <p className="text-[11px] text-slate-500 mt-1">JSON file storage & sync enabled</p>
+          <p className="text-[11px] text-slate-500 mt-1">
+            {serverHealth?.database?.name || 'folio'} • {serverHealth?.database?.viewersCount ?? 0} viewers • {serverHealth?.database?.gridFSImagesCount ?? 0} images • Password in DB: {serverHealth?.database?.passwordStoredInDb ? 'Yes' : 'No'}
+          </p>
         </div>
       </div>
 
