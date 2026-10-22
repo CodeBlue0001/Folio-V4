@@ -11,6 +11,15 @@ export interface TimelineItem {
 export interface ColorPair {
   headingColor: string;
   accentColor: string;
+  bgPrimary?: string;
+  bgSecondary?: string;
+}
+
+export interface ComponentColors {
+  headingColor?: string;
+  accentColor?: string;
+  bgPrimary?: string;
+  bgSecondary?: string;
 }
 
 export interface PortfolioTheme {
@@ -18,6 +27,19 @@ export interface PortfolioTheme {
   light: ColorPair;
   headingColor?: string;
   accentColor?: string;
+  bgPrimary?: string;
+  bgSecondary?: string;
+  components?: Record<
+    string,
+    {
+      dark?: ComponentColors;
+      light?: ComponentColors;
+      headingColor?: string;
+      accentColor?: string;
+      bgPrimary?: string;
+      bgSecondary?: string;
+    }
+  >;
 }
 
 export interface ComponentVisibility {
@@ -135,13 +157,19 @@ export const DEFAULT_CONTENT: PortfolioContent = {
     dark: {
       headingColor: '#D4A853',
       accentColor: '#34d399',
+      bgPrimary: '#07101e',
+      bgSecondary: '#0c1a2e',
     },
     light: {
       headingColor: '#1e293b',
       accentColor: '#0284c7',
+      bgPrimary: '#e8f4fd',
+      bgSecondary: '#dbeafe',
     },
     headingColor: '#D4A853',
     accentColor: '#34d399',
+    bgPrimary: '#07101e',
+    bgSecondary: '#0c1a2e',
   },
   footer: {
     text: 'Dipayan',
@@ -249,14 +277,17 @@ export function usePortfolioContent() {
 
   const fetchContent = useCallback(async () => {
     try {
-      const res = await fetch('/api/portfolio-content');
+      const res = await fetch('/api/portfolio-content', {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+      });
       if (res.ok) {
         const data = await res.json();
         const merged = deepMerge(DEFAULT_CONTENT, data);
         setContent(merged);
         // Cache to localStorage
         try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ data: merged, timestamp: Date.now() }));
         } catch { }
       }
     } catch {
@@ -273,35 +304,64 @@ export function usePortfolioContent() {
   // Listen for content updates from admin (custom event)
   useEffect(() => {
     const handler = () => {
+      try {
+        localStorage.removeItem(CACHE_KEY);
+      } catch { }
       fetchContent();
     };
     window.addEventListener('portfolio-content-updated', handler);
     return () => window.removeEventListener('portfolio-content-updated', handler);
   }, [fetchContent]);
 
-  const getColors = useCallback((isDarkMode: boolean) => {
-    return getThemeColors(content, isDarkMode);
+  const getColors = useCallback((isDarkMode: boolean, componentKey?: string) => {
+    return getThemeColors(content, isDarkMode, componentKey);
   }, [content]);
 
   return { content, isLoading, refetch: fetchContent, getThemeColors: getColors };
 }
 
-export function getThemeColors(content: PortfolioContent, isDark: boolean): ColorPair {
-  if (!content || !content.theme) {
-    return isDark
-      ? { headingColor: '#D4A853', accentColor: '#34d399' }
-      : { headingColor: '#1e293b', accentColor: '#0284c7' };
+export function getThemeColors(content: PortfolioContent, isDark: boolean, componentKey?: string): Required<ColorPair> {
+  const defaultDark: Required<ColorPair> = {
+    headingColor: '#D4A853',
+    accentColor: '#34d399',
+    bgPrimary: '#07101e',
+    bgSecondary: '#0c1a2e',
+  };
+
+  const defaultLight: Required<ColorPair> = {
+    headingColor: '#1e293b',
+    accentColor: '#0284c7',
+    bgPrimary: '#e8f4fd',
+    bgSecondary: '#dbeafe',
+  };
+
+  const base: Required<ColorPair> = !content || !content.theme
+    ? (isDark ? defaultDark : defaultLight)
+    : isDark
+      ? {
+          headingColor: content.theme.dark?.headingColor || content.theme.headingColor || defaultDark.headingColor,
+          accentColor: content.theme.dark?.accentColor || content.theme.accentColor || defaultDark.accentColor,
+          bgPrimary: content.theme.dark?.bgPrimary || content.theme.bgPrimary || defaultDark.bgPrimary,
+          bgSecondary: content.theme.dark?.bgSecondary || content.theme.bgSecondary || defaultDark.bgSecondary,
+        }
+      : {
+          headingColor: content.theme.light?.headingColor || defaultLight.headingColor,
+          accentColor: content.theme.light?.accentColor || defaultLight.accentColor,
+          bgPrimary: content.theme.light?.bgPrimary || defaultLight.bgPrimary,
+          bgSecondary: content.theme.light?.bgSecondary || defaultLight.bgSecondary,
+        };
+
+  if (!componentKey || !content?.theme?.components?.[componentKey]) {
+    return base;
   }
 
-  if (isDark) {
-    return {
-      headingColor: content.theme.dark?.headingColor || content.theme.headingColor || '#D4A853',
-      accentColor: content.theme.dark?.accentColor || content.theme.accentColor || '#34d399',
-    };
-  } else {
-    return {
-      headingColor: content.theme.light?.headingColor || '#1e293b',
-      accentColor: content.theme.light?.accentColor || '#0284c7',
-    };
-  }
+  const comp = content.theme.components[componentKey];
+  const compMode = isDark ? comp.dark : comp.light;
+
+  return {
+    headingColor: compMode?.headingColor || comp.headingColor || base.headingColor,
+    accentColor: compMode?.accentColor || comp.accentColor || base.accentColor,
+    bgPrimary: compMode?.bgPrimary || comp.bgPrimary || base.bgPrimary,
+    bgSecondary: compMode?.bgSecondary || comp.bgSecondary || base.bgSecondary,
+  };
 }

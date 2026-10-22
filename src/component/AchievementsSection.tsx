@@ -48,7 +48,8 @@ const AnimatedCounter = ({ value, duration = 2000, suffix = '' }: { value: numbe
 // ─── Main Component ────────────────────────────────────────────────────────────
 export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps) => {
   const { content, getThemeColors } = usePortfolioContent();
-  const { headingColor } = getThemeColors(isDark);
+  const themeColors = getThemeColors(isDark, 'achievements');
+  const { headingColor } = themeColors;
   const [lcData, setLcData] = useState<LeetCodeFullProfile | null>(null);
   const [lcLoading, setLcLoading] = useState(true);
   const [lcError, setLcError] = useState<string | null>(null);
@@ -87,7 +88,13 @@ export const AchievementsSection = ({ isDark = true }: AchievementsSectionProps)
   const stats = lcData?.stats;
 
   return (
-    <section id="achievements" className="py-12 sm:py-16 md:py-20 px-4 md:px-6 relative z-10 overflow-hidden">
+    <section
+      id="achievements"
+      className="py-12 sm:py-16 md:py-20 px-4 md:px-6 relative z-10 overflow-hidden transition-colors duration-700"
+      style={{
+        background: `linear-gradient(to bottom, ${themeColors.bgPrimary}, ${themeColors.bgSecondary})`
+      }}
+    >
       <div className="container mx-auto max-w-6xl">
 
         {/* ─── Section Header ─────────────────────────────────────────────── */}

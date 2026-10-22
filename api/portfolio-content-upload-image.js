@@ -1,5 +1,7 @@
 import mongoose from 'mongoose';
 import { Readable } from 'stream';
+import fs from 'fs';
+import path from 'path';
 
 export const config = {
   api: {
@@ -16,9 +18,22 @@ async function connectToMongo() {
   if (cachedConn && mongoose.connection.readyState === 1) {
     return cachedConn;
   }
-  cachedConn = await mongoose.connect(MONGODB_URI);
+  cachedConn = await mongoose.connect(MONGODB_URI, {
+    serverSelectionTimeoutMS: 10000,
+  });
   return cachedConn;
 }
+
+const portfolioContentSchema = new mongoose.Schema(
+  {
+    identifier: { type: String, default: 'main', unique: true, index: true },
+    content: { type: mongoose.Schema.Types.Mixed, required: true },
+    updatedAt: { type: Date, default: Date.now }
+  },
+  { collection: 'portfolio_content', timestamps: true }
+);
+
+const PortfolioContent = mongoose.models.PortfolioContent || mongoose.model('PortfolioContent', portfolioContentSchema);
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -87,6 +102,38 @@ export default async function handler(req, res) {
     });
 
     const imagePath = `/api/images/${uploadStream.id}`;
+
+    // Immediately persist profileImage into MongoDB PortfolioContent collection
+    try {
+      let doc = await PortfolioContent.findOne({ identifier: 'main' }).lean();
+      let currentContent = doc?.content;
+      if (!currentContent) {
+        try {
+          const filePath = path.join(process.cwd(), 'server', 'portfolio_content.json');
+          if (fs.existsSync(filePath)) {
+            currentContent = JSON.parse(fs.readFileSync(filePath, 'utf-8'));
+          }
+        } catch { }
+      }
+      if (!currentContent) currentContent = {};
+      if (!currentContent.about) currentContent.about = {};
+      currentContent.about.profileImage = imagePath;
+
+      await PortfolioContent.findOneAndUpdate(
+        { identifier: 'main' },
+        { content: currentContent, updatedAt: new Date() },
+        { upsert: true, new: true }
+      );
+
+      // Also persist to disk JSON file if writable
+      try {
+        const filePath = path.join(process.cwd(), 'server', 'portfolio_content.json');
+        fs.writeFileSync(filePath, JSON.stringify(currentContent, null, 2), 'utf-8');
+      } catch { }
+    } catch (dbErr) {
+      console.warn('[GridFS Upload] Warning: Failed to update PortfolioContent in MongoDB:', dbErr);
+    }
+
     return res.status(200).json({
       success: true,
       imagePath,

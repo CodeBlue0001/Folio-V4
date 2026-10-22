@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
 
 interface ArcReactorBackgroundProps {
   isDark: boolean;
@@ -19,6 +20,9 @@ const particleData = Array.from({ length: PARTICLE_COUNT }, () => ({
 }));
 
 export const ArcReactorBackground = ({ isDark }: ArcReactorBackgroundProps) => {
+  const { getThemeColors } = usePortfolioContent();
+  const colors = getThemeColors(isDark, 'arcReactor');
+
   // Memoize particle styles so they don't re-create on every render
   const particleStyles = useMemo(() => {
     return particleData.map((p) => ({
@@ -34,22 +38,20 @@ export const ArcReactorBackground = ({ isDark }: ArcReactorBackgroundProps) => {
     <div className="fixed inset-0 pointer-events-none overflow-hidden">
       {/* Gradient Background */}
       <div
-        className={`absolute inset-0 ${
-          isDark
-            ? 'bg-gradient-to-b from-[#07101e] via-[#0c1a2e] to-[#07101e]'
-            : 'bg-gradient-to-b from-[#e8f4fd] via-[#dbeafe] to-[#e8f4fd]'
-        }`}
+        className="absolute inset-0 transition-colors duration-700"
+        style={{
+          background: `linear-gradient(to bottom, ${colors.bgPrimary}, ${colors.bgSecondary}, ${colors.bgPrimary})`
+        }}
       />
 
-      {/* Animated Grid — subtle natural tones */}
+      {/* Animated Grid — dynamically tinted with accent color */}
       <div className="absolute inset-0 opacity-20">
         <div
-          className={`w-full h-full ${
-            isDark
-              ? 'bg-[linear-gradient(rgba(52,211,153,0.08)_1px,transparent_1px),linear-gradient(90deg,rgba(52,211,153,0.08)_1px,transparent_1px)]'
-              : 'bg-[linear-gradient(rgba(14,165,233,0.15)_1px,transparent_1px),linear-gradient(90deg,rgba(14,165,233,0.15)_1px,transparent_1px)]'
-          }`}
-          style={{ backgroundSize: '50px 50px' }}
+          className="w-full h-full"
+          style={{
+            backgroundSize: '50px 50px',
+            backgroundImage: `linear-gradient(${colors.accentColor}22 1px, transparent 1px), linear-gradient(90deg, ${colors.accentColor}22 1px, transparent 1px)`
+          }}
         />
       </div>
 

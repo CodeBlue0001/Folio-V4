@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "id": "achieve-1792645796979-yfpp",
+    "title": "Web Development Internship",
+    "issuer": "YCSS.PVT.LTD",
+    "category": "internship",
+    "date": "2024",
+    "description": "Full-stack web development internship focusing on modern UI design, RESTful APIs, and MongoDB database management.",
+    "badgeImageUrl": "",
+    "iconType": "internship",
+    "verificationUrl": "",
+    "featured": true,
+    "skills": [
+      "HTML",
+      "CSS",
+      "JS",
+      "SQL",
+      "MONGODB"
+    ],
+    "level": "Specialist"
+  }
+]

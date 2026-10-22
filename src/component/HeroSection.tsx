@@ -9,19 +9,20 @@ interface HeroSectionProps {
 }
 
 export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
-  const { content } = usePortfolioContent();
+  const { content, getThemeColors } = usePortfolioContent();
+  const colors = getThemeColors(isDark, 'hero');
   const heroVis = content.visibility?.hero;
 
   const threeThemes = {
     dark: {
-      background: '#07101e',
-      primary: '#34d399',
+      background: colors.bgPrimary,
+      primary: colors.accentColor,
       secondary: '#fbbf24',
       tertiary: '#38bdf8'
     },
     light: {
-      background: '#e8f4fd',
-      primary: '#059669',
+      background: colors.bgPrimary,
+      primary: colors.accentColor,
       secondary: '#d97706',
       tertiary: '#0284c7'
     }
@@ -37,10 +38,12 @@ export const HeroSection = ({ isDark = true }: HeroSectionProps) => {
       )}
 
       {/* Overlay gradient for better text readability */}
-      <div className={`absolute inset-0 z-[1] ${isDark
-        ? 'bg-gradient-to-b from-transparent via-indigo-950/30 to-indigo-950/80'
-        : 'bg-gradient-to-b from-transparent via-sky-100/30 to-sky-50/80'
-        }`} />
+      <div
+        className="absolute inset-0 z-[1] transition-colors duration-700"
+        style={{
+          background: `linear-gradient(to bottom, transparent, ${colors.bgSecondary}4D, ${colors.bgSecondary}D9)`
+        }}
+      />
 
       {/* Content Overlay */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-4 sm:px-6 md:px-8">

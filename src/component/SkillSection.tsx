@@ -112,7 +112,8 @@ interface SkillsSectionProps {
 
 export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
   const { content, getThemeColors } = usePortfolioContent();
-  const { headingColor } = getThemeColors(isDark);
+  const themeColors = getThemeColors(isDark, 'skills');
+  const { headingColor } = themeColors;
   const [selectedSkill, setSelectedSkill] = useState<string | null>(null);
 
   const skillsVis = content.visibility?.skills;
@@ -172,11 +173,13 @@ export const SkillsSection = ({ isDark = true }: SkillsSectionProps) => {
   }, [selectedSkill]);
 
   return (
-    <section id="skills" className={`relative min-h-screen py-12 sm:py-16 md:py-20 px-4 md:px-6 ${
-      isDark 
-        ? 'bg-gradient-to-b from-[#07101e] to-[#0c1a2e]' 
-        : 'bg-gradient-to-b from-[#e8f4fd] to-[#dbeafe]'
-    } overflow-hidden`}>
+    <section
+      id="skills"
+      className="relative min-h-screen py-12 sm:py-16 md:py-20 px-4 md:px-6 overflow-hidden transition-colors duration-700"
+      style={{
+        background: `linear-gradient(to bottom, ${themeColors.bgPrimary}, ${themeColors.bgSecondary})`
+      }}
+    >
       <div className="container mx-auto max-w-7xl relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 50 }}

@@ -1,6 +1,6 @@
 import initialAchievementsJson from './achievements.json';
 
-export type BadgeCategory = 'leetcode' | 'google' | 'certification' | 'badge' | 'competition';
+export type BadgeCategory = 'leetcode' | 'google' | 'certification' | 'internship' | 'badge' | 'competition';
 
 export interface Achievement {
   id: string;
@@ -10,7 +10,7 @@ export interface Achievement {
   date: string;
   description: string;
   badgeImageUrl?: string;
-  iconType: 'leetcode' | 'google' | 'hackerrank' | 'coursera' | 'aws' | 'badge' | 'trophy';
+  iconType: 'leetcode' | 'google' | 'hackerrank' | 'coursera' | 'aws' | 'badge' | 'trophy' | 'internship';
   verificationUrl?: string;
   featured: boolean;
   skills: string[];

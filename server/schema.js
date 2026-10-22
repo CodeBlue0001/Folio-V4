@@ -163,27 +163,59 @@ export const getContentType = (file) => {
  */
 export const findImage = async (identifier) => {
   const bucket = getGridFSBucket();
+  let id = typeof identifier === 'string' ? identifier.trim() : String(identifier);
+  if (id.startsWith('/api/images/')) {
+    id = id.replace('/api/images/', '');
+  }
+  id = id.split('?')[0];
 
-  // Try finding by ObjectId first if valid 24-char hex
-  if (identifier && mongoose.Types.ObjectId.isValid(identifier)) {
+  const cleanId = id.replace(/\.[^/.]+$/, '');
+
+  // 1. Try finding by ObjectId first if valid 24-char hex
+  if (id && mongoose.Types.ObjectId.isValid(id)) {
     try {
-      const objectId = new mongoose.Types.ObjectId(identifier);
-      if (String(objectId) === String(identifier)) {
+      const objectId = new mongoose.Types.ObjectId(id);
+      if (String(objectId) === id) {
         const files = await bucket.find({ _id: objectId }).toArray();
         if (files.length > 0) return files[0];
       }
-    } catch {
-      // not a pure ObjectId, fall through
-    }
+    } catch { }
   }
 
-  // Fallback to finding by filename (most recent first)
+  // 2. Try finding by cleanId as ObjectId
+  if (cleanId && mongoose.Types.ObjectId.isValid(cleanId)) {
+    try {
+      const objectId = new mongoose.Types.ObjectId(cleanId);
+      if (String(objectId) === cleanId) {
+        const files = await bucket.find({ _id: objectId }).toArray();
+        if (files.length > 0) return files[0];
+      }
+    } catch { }
+  }
+
+  // 3. Fallback to finding by exact filename
   const filesByName = await bucket
-    .find({ filename: identifier })
+    .find({ filename: id })
     .sort({ uploadDate: -1 })
     .toArray();
 
   if (filesByName.length > 0) return filesByName[0];
+
+  // 4. Fallback to cleanId filename
+  if (cleanId !== id) {
+    const filesByClean = await bucket
+      .find({ filename: cleanId })
+      .sort({ uploadDate: -1 })
+      .toArray();
+    if (filesByClean.length > 0) return filesByClean[0];
+  }
+
+  // 5. Case-insensitive search
+  const regexFiles = await bucket
+    .find({ filename: new RegExp(`^${cleanId}`, 'i') })
+    .sort({ uploadDate: -1 })
+    .toArray();
+  if (regexFiles.length > 0) return regexFiles[0];
 
   return null;
 };

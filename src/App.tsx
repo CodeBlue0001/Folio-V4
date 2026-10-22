@@ -52,7 +52,8 @@ function MainLayout() {
 
   // Collect viewer location IMMEDIATELY on app mount
   const { userLocation, viewers, locationError } = useViewerLocation();
-  const { content } = usePortfolioContent();
+  const { content, getThemeColors } = usePortfolioContent();
+  const themeColors = getThemeColors(isDark);
 
   const secVis = content.visibility?.sections;
   const decVis = content.visibility?.decorations;
@@ -96,7 +97,14 @@ function MainLayout() {
   []);
 
   return (
-    <div className="min-h-screen relative">
+    <div
+      className="min-h-screen relative transition-colors duration-500"
+      style={{
+        backgroundColor: themeColors.bgPrimary,
+        '--bg-primary': themeColors.bgPrimary,
+        '--bg-secondary': themeColors.bgSecondary,
+      } as React.CSSProperties}
+    >
       {/* Arc Reactor Background for entire page */}
       {decVis?.showArcReactor !== false && (
         <div className="fixed inset-0 z-0">
@@ -157,50 +165,58 @@ function MainLayout() {
         )}
 
         {/* Footer */}
-        {secVis?.footer !== false && (
-          <motion.footer
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className={`${
-              isDark 
-                ? 'bg-slate-900/95 border-slate-800' 
-                : 'bg-gray-100/95 border-gray-300'
-            } border-t py-8`}
-          >
-            <div className="container mx-auto px-6 text-center">
-              <motion.p
-                animate={{ opacity: [0.5, 1, 0.5] }}
-                transition={{ duration: 3, repeat: Infinity }}
-                className={isDark ? 'text-slate-400' : 'text-gray-600'}
-              >
-                © {new Date().getFullYear()} {content.footer.text}. Crafted with passion and precision.
-              </motion.p>
-              
-              {/* Footer decorative elements */}
-              <div className="flex justify-center mt-4 gap-4">
-                {[...Array(5)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    animate={{
-                      scale: [1, 1.2, 1],
-                      rotate: [0, 180, 360],
-                    }}
-                    transition={{
-                      duration: 4 + i,
-                      repeat: Infinity,
-                      delay: i * 0.2,
-                    }}
-                    className={`w-2 h-2 rounded-full ${
-                      isDark ? 'bg-blue-400/30' : 'bg-blue-600/30'
-                    }`}
-                  />
-                ))}
+        {secVis?.footer !== false && (() => {
+          const footerColors = getThemeColors(isDark, 'footer');
+          return (
+            <motion.footer
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              transition={{ duration: 0.8 }}
+              viewport={{ once: true }}
+              style={{
+                backgroundColor: footerColors.bgPrimary,
+                borderColor: `${footerColors.accentColor}33`,
+              }}
+              className={`${
+                isDark 
+                  ? 'bg-slate-900/95 border-slate-800' 
+                  : 'bg-gray-100/95 border-gray-300'
+              } border-t py-8 transition-colors duration-700`}
+            >
+              <div className="container mx-auto px-6 text-center">
+                <motion.p
+                  animate={{ opacity: [0.5, 1, 0.5] }}
+                  transition={{ duration: 3, repeat: Infinity }}
+                  style={{ color: footerColors.headingColor }}
+                  className={isDark ? 'text-slate-400' : 'text-gray-600'}
+                >
+                  © {new Date().getFullYear()} {content.footer.text}. Crafted with passion and precision.
+                </motion.p>
+
+                {/* Footer decorative elements */}
+                <div className="flex justify-center mt-4 gap-4">
+                  {[...Array(5)].map((_, i) => (
+                    <motion.div
+                      key={i}
+                      animate={{
+                        scale: [1, 1.2, 1],
+                        rotate: [0, 180, 360],
+                      }}
+                      transition={{
+                        duration: 4 + i,
+                        repeat: Infinity,
+                        delay: i * 0.2,
+                      }}
+                      className={`w-2 h-2 rounded-full ${
+                        isDark ? 'bg-blue-400/30' : 'bg-blue-600/30'
+                      }`}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
-          </motion.footer>
-        )}
+            </motion.footer>
+          );
+        })()}
       </main>
 
       {/* Scroll to Top Button — only visible after scrolling down */}

@@ -17,6 +17,11 @@ import {
   Sparkles,
   GripVertical,
   X,
+  RotateCcw,
+  FolderGit2,
+  Cpu,
+  Award,
+  Layers,
 } from 'lucide-react';
 import {
   type PortfolioContent,
@@ -146,6 +151,123 @@ const ColorPicker: React.FC<ColorPickerProps> = ({ label, value, onChange }) => 
   </div>
 );
 
+// ─── Section Color Controls ─────────────────────────────────────────────────
+
+interface SectionColorControlsProps {
+  compKey: string;
+  compName: string;
+  content: PortfolioContent;
+  updateComponentColor: (
+    compKey: string,
+    mode: 'dark' | 'light',
+    field: 'headingColor' | 'accentColor' | 'bgPrimary' | 'bgSecondary',
+    val: string
+  ) => void;
+  resetComponentColor: (compKey: string) => void;
+  getCompColor: (
+    compKey: string,
+    mode: 'dark' | 'light',
+    field: 'headingColor' | 'accentColor' | 'bgPrimary' | 'bgSecondary'
+  ) => string;
+}
+
+const SectionColorControls: React.FC<SectionColorControlsProps> = ({
+  compKey,
+  compName,
+  content,
+  updateComponentColor,
+  resetComponentColor,
+  getCompColor,
+}) => {
+  const [activeMode, setActiveMode] = useState<'dark' | 'light'>('dark');
+  const [isOpen, setIsOpen] = useState(false);
+  const isCustom = Boolean(content.theme?.components?.[compKey]);
+
+  return (
+    <div className="mt-4 pt-3 border-t border-slate-800">
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer"
+        >
+          <Palette className="w-3.5 h-3.5 text-violet-400" />
+          <span>{compName} Custom Colors & Background</span>
+          {isCustom ? (
+            <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
+              Customized
+            </span>
+          ) : (
+            <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">
+              Theme Default
+            </span>
+          )}
+          {isOpen ? <ChevronUp className="w-3.5 h-3.5 text-slate-400" /> : <ChevronDown className="w-3.5 h-3.5 text-slate-400" />}
+        </button>
+        {isCustom && (
+          <button
+            type="button"
+            onClick={() => resetComponentColor(compKey)}
+            className="text-[10px] text-slate-400 hover:text-rose-400 flex items-center gap-1 cursor-pointer transition-colors"
+            title="Reset to global theme"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Reset to Theme</span>
+          </button>
+        )}
+      </div>
+
+      {isOpen && (
+        <div className="mt-3 p-3.5 rounded-xl border border-slate-800 bg-slate-900/70 space-y-3">
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setActiveMode('dark')}
+              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                activeMode === 'dark' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🌙 Dark Mode
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveMode('light')}
+              className={`px-2.5 py-1 rounded text-xs font-semibold transition-all cursor-pointer ${
+                activeMode === 'light' ? 'bg-amber-500 text-slate-900 shadow-sm' : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ☀️ Light Mode
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <ColorPicker
+              label={`${activeMode === 'dark' ? 'Dark' : 'Light'} Primary Background`}
+              value={getCompColor(compKey, activeMode, 'bgPrimary')}
+              onChange={(v) => updateComponentColor(compKey, activeMode, 'bgPrimary', v)}
+            />
+            <ColorPicker
+              label={`${activeMode === 'dark' ? 'Dark' : 'Light'} Secondary Background`}
+              value={getCompColor(compKey, activeMode, 'bgSecondary')}
+              onChange={(v) => updateComponentColor(compKey, activeMode, 'bgSecondary', v)}
+            />
+            <ColorPicker
+              label={`${activeMode === 'dark' ? 'Dark' : 'Light'} Heading / Text`}
+              value={getCompColor(compKey, activeMode, 'headingColor')}
+              onChange={(v) => updateComponentColor(compKey, activeMode, 'headingColor', v)}
+            />
+            <ColorPicker
+              label={`${activeMode === 'dark' ? 'Dark' : 'Light'} Accent Color`}
+              value={getCompColor(compKey, activeMode, 'accentColor')}
+              onChange={(v) => updateComponentColor(compKey, activeMode, 'accentColor', v)}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
 // ─── File Upload ────────────────────────────────────────────────────────────
 
 interface FileUploadProps {
@@ -247,7 +369,7 @@ const FileUpload: React.FC<FileUploadProps> = ({ label, accept, currentFile, onU
             icon
           )}
           <span className="text-xs font-medium">
-            {isLoading ? 'Uploading file...' : 'Click or drag to upload from device'}
+            {isLoading ? 'Streaming binary chunks to MongoDB GridFS...' : 'Click or drag to upload from device'}
           </span>
         </div>
         {currentFile && (
@@ -266,14 +388,31 @@ export const AdminPortfolioEditor: React.FC = () => {
   const [content, setContent] = useState<PortfolioContent>(DEFAULT_CONTENT);
   const [isSaving, setIsSaving] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [uploadPreviewData, setUploadPreviewData] = useState<string | null>(null);
+  const [previewLoadState, setPreviewLoadState] = useState<'loading' | 'loaded' | 'error'>('loaded');
+  const [previewCacheBuster, setPreviewCacheBuster] = useState<number>(Date.now());
   const [isUploadingResume, setIsUploadingResume] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [hasChanges, setHasChanges] = useState(false);
   const [themeTab, setThemeTab] = useState<'both' | 'dark' | 'light'>('both');
+  const [selectedCompKey, setSelectedCompKey] = useState<string>('hero');
+  const [compThemeTab, setCompThemeTab] = useState<'dark' | 'light'>('dark');
+
+  const PORTFOLIO_COMPONENTS = [
+    { key: 'hero', name: 'Hero Section', icon: '⚡', desc: 'Typewriter phrases, Subtitle, 3D Canvas' },
+    { key: 'about', name: 'About Section', icon: '👤', desc: 'Bio, Hobbies, Journey Timeline & Photo' },
+    { key: 'projects', name: 'Projects Section', icon: '💼', desc: 'GitHub Repositories, Star Badges & Cards' },
+    { key: 'skills', name: 'Skills Section', icon: '🛠️', desc: 'Skill Badges & GitHub Activity' },
+    { key: 'achievements', name: 'Achievements Section', icon: '🏆', desc: 'LeetCode Stats & Credentials' },
+    { key: 'contact', name: 'Contact Section', icon: '✉️', desc: 'Interactive Globe & Contact Cards' },
+    { key: 'footer', name: 'Footer', icon: '📄', desc: 'Copyright & Decorative Elements' },
+    { key: 'navigation', name: 'Navigation Bar', icon: '🧭', desc: 'Top Floating Navigation Dock' },
+    { key: 'arcReactor', name: 'Arc Reactor Canvas', icon: '⚛️', desc: 'Center Core & Orbital Particle Backdrop' },
+  ];
 
   // Load from API
   useEffect(() => {
-    fetch('/api/portfolio-content')
+    fetch('/api/portfolio-content', { cache: 'no-store' })
       .then((res) => (res.ok ? res.json() : DEFAULT_CONTENT))
       .then((data) => {
         const merged = deepMergeContent(DEFAULT_CONTENT, data);
@@ -299,13 +438,23 @@ export const AdminPortfolioEditor: React.FC = () => {
       result.theme.dark = {
         headingColor: result.theme.headingColor || defaults.theme.dark.headingColor,
         accentColor: result.theme.accentColor || defaults.theme.dark.accentColor,
+        bgPrimary: defaults.theme.dark.bgPrimary || '#07101e',
+        bgSecondary: defaults.theme.dark.bgSecondary || '#0c1a2e',
       };
+    } else {
+      if (!result.theme.dark.bgPrimary) result.theme.dark.bgPrimary = defaults.theme.dark.bgPrimary || '#07101e';
+      if (!result.theme.dark.bgSecondary) result.theme.dark.bgSecondary = defaults.theme.dark.bgSecondary || '#0c1a2e';
     }
     if (!result.theme.light) {
       result.theme.light = {
         headingColor: defaults.theme.light.headingColor,
         accentColor: defaults.theme.light.accentColor,
+        bgPrimary: defaults.theme.light.bgPrimary || '#e8f4fd',
+        bgSecondary: defaults.theme.light.bgSecondary || '#dbeafe',
       };
+    } else {
+      if (!result.theme.light.bgPrimary) result.theme.light.bgPrimary = defaults.theme.light.bgPrimary || '#e8f4fd';
+      if (!result.theme.light.bgSecondary) result.theme.light.bgSecondary = defaults.theme.light.bgSecondary || '#dbeafe';
     }
 
     return result as PortfolioContent;
@@ -331,7 +480,11 @@ export const AdminPortfolioEditor: React.FC = () => {
     setHasChanges(true);
   };
 
-  const updateThemeColor = (mode: 'dark' | 'light', field: 'headingColor' | 'accentColor', val: string) => {
+  const updateThemeColor = (
+    mode: 'dark' | 'light',
+    field: 'headingColor' | 'accentColor' | 'bgPrimary' | 'bgSecondary',
+    val: string
+  ) => {
     setContent((prev) => ({
       ...prev,
       theme: {
@@ -344,6 +497,87 @@ export const AdminPortfolioEditor: React.FC = () => {
       },
     }));
     setHasChanges(true);
+  };
+
+  const updateComponentColor = (
+    compKey: string,
+    mode: 'dark' | 'light',
+    field: 'headingColor' | 'accentColor' | 'bgPrimary' | 'bgSecondary',
+    val: string
+  ) => {
+    setContent((prev) => {
+      const existingTheme = prev.theme || {};
+      const existingComponents = existingTheme.components || {};
+      const existingComp = existingComponents[compKey] || {};
+      const existingMode = existingComp[mode] || {};
+
+      return {
+        ...prev,
+        theme: {
+          ...existingTheme,
+          components: {
+            ...existingComponents,
+            [compKey]: {
+              ...existingComp,
+              [mode]: {
+                ...existingMode,
+                [field]: val,
+              },
+            },
+          },
+        },
+      };
+    });
+    setHasChanges(true);
+  };
+
+  const resetComponentColor = (compKey: string) => {
+    setContent((prev) => {
+      const existingTheme = prev.theme || {};
+      const existingComponents = { ...(existingTheme.components || {}) };
+      delete existingComponents[compKey];
+
+      return {
+        ...prev,
+        theme: {
+          ...existingTheme,
+          components: existingComponents,
+        },
+      };
+    });
+    setHasChanges(true);
+    showFeedback('success', `Reset ${compKey} colors to global theme defaults.`);
+  };
+
+  const getCompColor = (
+    compKey: string,
+    mode: 'dark' | 'light',
+    field: 'headingColor' | 'accentColor' | 'bgPrimary' | 'bgSecondary'
+  ) => {
+    const compOverride = content.theme?.components?.[compKey]?.[mode]?.[field];
+    if (compOverride) return compOverride;
+
+    if (mode === 'dark') {
+      const fallback =
+        field === 'bgPrimary'
+          ? content.theme?.dark?.bgPrimary || content.theme?.bgPrimary || '#07101e'
+          : field === 'bgSecondary'
+          ? content.theme?.dark?.bgSecondary || content.theme?.bgSecondary || '#0c1a2e'
+          : field === 'headingColor'
+          ? content.theme?.dark?.headingColor || content.theme?.headingColor || '#D4A853'
+          : content.theme?.dark?.accentColor || content.theme?.accentColor || '#34d399';
+      return fallback;
+    } else {
+      const fallback =
+        field === 'bgPrimary'
+          ? content.theme?.light?.bgPrimary || '#e8f4fd'
+          : field === 'bgSecondary'
+          ? content.theme?.light?.bgSecondary || '#dbeafe'
+          : field === 'headingColor'
+          ? content.theme?.light?.headingColor || '#1e293b'
+          : content.theme?.light?.accentColor || '#0284c7';
+      return fallback;
+    }
   };
 
   const handleSave = async () => {
@@ -379,6 +613,8 @@ export const AdminPortfolioEditor: React.FC = () => {
 
   const handleImageUpload = async (data: string, name: string) => {
     setIsUploadingImage(true);
+    setUploadPreviewData(data);
+    setPreviewLoadState('loading');
     // Set immediate preview in UI for seamless feedback
     updateField('about', 'profileImage', data);
 
@@ -391,15 +627,27 @@ export const AdminPortfolioEditor: React.FC = () => {
       if (res.ok) {
         const result = await res.json();
         const activePath = result.imagePath || data;
+        const now = Date.now();
+        setPreviewCacheBuster(now);
         updateField('about', 'profileImage', activePath);
-        showFeedback('success', `Profile photo stored in MongoDB GridFS (${result.fileId ? 'ID: ' + result.fileId.slice(-6) : 'success'})`);
+
+        // Invalidate frontend cache so refresh paints new MongoDB image immediately
+        try {
+          localStorage.removeItem('folio_portfolio_content');
+        } catch { }
+
+        // Content is saved permanently to MongoDB on upload!
+        setHasChanges(false);
+        showFeedback('success', `Profile photo stored in MongoDB GridFS & persisted forever (${result.fileId ? 'ID: ' + String(result.fileId).slice(-6) : 'saved'})`);
         window.dispatchEvent(new CustomEvent('portfolio-content-updated'));
       } else {
         const errorData = await res.json().catch(() => null);
         showFeedback('error', errorData?.error || 'Failed to upload image to MongoDB GridFS.');
+        setPreviewLoadState('error');
       }
     } catch (err: any) {
       showFeedback('error', err?.message || 'Error uploading image to server');
+      setPreviewLoadState('error');
     } finally {
       setIsUploadingImage(false);
     }
@@ -574,6 +822,15 @@ export const AdminPortfolioEditor: React.FC = () => {
           icon={<FileText className="w-4 h-4" />}
           isLoading={isUploadingResume}
         />
+
+        <SectionColorControls
+          compKey="hero"
+          compName="Hero Section"
+          content={content}
+          updateComponentColor={updateComponentColor}
+          resetComponentColor={resetComponentColor}
+          getCompColor={getCompColor}
+        />
       </SectionPanel>
 
       {/* ── About Section ── */}
@@ -617,7 +874,8 @@ export const AdminPortfolioEditor: React.FC = () => {
                 type="button"
                 onClick={() => {
                   updateField('about', 'profileImage', '');
-                  showFeedback('success', 'Profile image removed. Blank box will show placeholder until a new photo is set.');
+                  setUploadPreviewData(null);
+                  showFeedback('success', 'Profile image removed.');
                 }}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-400 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 transition-colors cursor-pointer"
               >
@@ -639,21 +897,34 @@ export const AdminPortfolioEditor: React.FC = () => {
           <FieldInput
             label="Or Image URL / Path"
             value={content.about.profileImage}
-            onChange={(v) => updateField('about', 'profileImage', v)}
+            onChange={(v) => {
+              updateField('about', 'profileImage', v);
+              setPreviewCacheBuster(Date.now());
+            }}
             placeholder="/api/images/... or https://images.unsplash.com/..."
           />
 
           {/* Visual Preview */}
-          {content.about.profileImage ? (
+          {(content.about.profileImage || uploadPreviewData) ? (
             <div>
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
                   Live Display Preview
                 </span>
-                <div className="flex items-center gap-1.5">
-                  {content.about.profileImage.startsWith('/api/images') && (
-                    <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
-                      MongoDB GridFS
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {isUploadingImage ? (
+                    <span className="text-[10px] font-mono text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20 animate-pulse flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping" />
+                      Streaming to Mongo Chunks...
+                    </span>
+                  ) : content.about.profileImage.startsWith('/api/images') ? (
+                    <span className="text-[10px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20 flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                      MongoDB GridFS (Chunks)
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-mono text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded border border-purple-500/20">
+                      Custom URL
                     </span>
                   )}
                   <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
@@ -661,21 +932,80 @@ export const AdminPortfolioEditor: React.FC = () => {
                   </span>
                 </div>
               </div>
-              <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden border-2 border-cyan-500/40 shadow-xl shadow-cyan-950/30 bg-slate-900 group">
+
+              <div className="relative w-44 h-44 sm:w-52 sm:h-52 rounded-2xl overflow-hidden border-2 border-cyan-500/40 shadow-xl shadow-cyan-950/30 bg-slate-900 group flex items-center justify-center">
+                {/* Image element */}
                 <img
-                  key={content.about.profileImage}
-                  src={content.about.profileImage}
+                  key={`${content.about.profileImage || uploadPreviewData}-${previewCacheBuster}`}
+                  src={
+                    isUploadingImage && uploadPreviewData
+                      ? uploadPreviewData
+                      : content.about.profileImage.startsWith('/api/images')
+                      ? `${content.about.profileImage}?t=${previewCacheBuster}`
+                      : content.about.profileImage
+                  }
                   alt="Profile Preview"
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
+                  className={`w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 ${
+                    previewLoadState === 'loading' && !uploadPreviewData ? 'opacity-0' : 'opacity-100'
+                  }`}
+                  onLoad={() => {
+                    setPreviewLoadState('loaded');
                   }}
-                  onLoad={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'block';
+                  onError={() => {
+                    setPreviewLoadState('error');
                   }}
                 />
+
+                {/* Uploading progress overlay */}
+                {isUploadingImage && (
+                  <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xs flex flex-col items-center justify-center p-3 text-center">
+                    <div className="w-8 h-8 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin mb-2" />
+                    <span className="text-xs font-semibold text-cyan-300">Streaming to GridFS</span>
+                    <span className="text-[10px] text-slate-400 mt-0.5">Uploading chunks to MongoDB...</span>
+                  </div>
+                )}
+
+                {/* Loading from Mongo Chunks overlay */}
+                {!isUploadingImage && previewLoadState === 'loading' && (
+                  <div className="absolute inset-0 bg-slate-900/80 flex flex-col items-center justify-center p-3 text-center">
+                    <div className="w-6 h-6 rounded-full border-2 border-cyan-400 border-t-transparent animate-spin mb-2" />
+                    <span className="text-[11px] text-slate-300">Reading Mongo Chunks...</span>
+                  </div>
+                )}
+
+                {/* Error state */}
+                {!isUploadingImage && previewLoadState === 'error' && (
+                  <div className="absolute inset-0 bg-slate-900/90 flex flex-col items-center justify-center p-3 text-center">
+                    <p className="text-xs font-medium text-rose-400 mb-1">Failed to stream from GridFS</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewLoadState('loading');
+                        setPreviewCacheBuster(Date.now());
+                      }}
+                      className="mt-1 px-2.5 py-1 text-[11px] font-semibold text-cyan-300 bg-cyan-950/60 border border-cyan-500/30 rounded hover:bg-cyan-900/60 transition cursor-pointer"
+                    >
+                      Retry Mongo Stream
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Status bar under image */}
+              <div className="mt-2 flex items-center justify-between text-[11px] text-slate-400">
+                <span className="truncate max-w-[200px] font-mono text-[10px] text-slate-500">
+                  {content.about.profileImage}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPreviewLoadState('loading');
+                    setPreviewCacheBuster(Date.now());
+                  }}
+                  className="text-[10px] text-cyan-400 hover:text-cyan-300 underline cursor-pointer"
+                >
+                  Reload from DB
+                </button>
               </div>
             </div>
           ) : (
@@ -745,6 +1075,15 @@ export const AdminPortfolioEditor: React.FC = () => {
             ))}
           </div>
         </div>
+
+        <SectionColorControls
+          compKey="about"
+          compName="About Section"
+          content={content}
+          updateComponentColor={updateComponentColor}
+          resetComponentColor={resetComponentColor}
+          getCompColor={getCompColor}
+        />
       </SectionPanel>
 
       {/* ── Contact Section ── */}
@@ -807,51 +1146,116 @@ export const AdminPortfolioEditor: React.FC = () => {
             placeholder="https://linkedin.com/in/..."
           />
         </div>
+
+        <SectionColorControls
+          compKey="contact"
+          compName="Contact Section"
+          content={content}
+          updateComponentColor={updateComponentColor}
+          resetComponentColor={resetComponentColor}
+          getCompColor={getCompColor}
+        />
       </SectionPanel>
 
-      {/* ── Theme Section ── */}
+      {/* ── Projects Section ── */}
       <SectionPanel
-        title="Theme & Colors (Light & Dark Mode)"
+        title="Projects Section (Colors & Background)"
+        icon={<FolderGit2 className="w-4 h-4 text-sky-400" />}
+        color="bg-sky-500/10 border border-sky-500/25"
+      >
+        <p className="text-xs text-slate-400 mb-2">
+          Projects and pinned repositories are fetched dynamically from GitHub. Customize the background gradient, typography, and card accent colors below:
+        </p>
+        <SectionColorControls
+          compKey="projects"
+          compName="Projects Section"
+          content={content}
+          updateComponentColor={updateComponentColor}
+          resetComponentColor={resetComponentColor}
+          getCompColor={getCompColor}
+        />
+      </SectionPanel>
+
+      {/* ── Skills Section ── */}
+      <SectionPanel
+        title="Skills Section (Colors & Background)"
+        icon={<Cpu className="w-4 h-4 text-purple-400" />}
+        color="bg-purple-500/10 border border-purple-500/25"
+      >
+        <p className="text-xs text-slate-400 mb-2">
+          Interactive skill badges and GitHub activity timeline. Customize the section background and category accent colors below:
+        </p>
+        <SectionColorControls
+          compKey="skills"
+          compName="Skills Section"
+          content={content}
+          updateComponentColor={updateComponentColor}
+          resetComponentColor={resetComponentColor}
+          getCompColor={getCompColor}
+        />
+      </SectionPanel>
+
+      {/* ── Achievements Section ── */}
+      <SectionPanel
+        title="Achievements Section (Colors & Background)"
+        icon={<Award className="w-4 h-4 text-amber-400" />}
+        color="bg-amber-500/10 border border-amber-500/25"
+      >
+        <p className="text-xs text-slate-400 mb-2">
+          Real-time LeetCode statistics and certifications. Customize the section background and credentials highlight colors below:
+        </p>
+        <SectionColorControls
+          compKey="achievements"
+          compName="Achievements Section"
+          content={content}
+          updateComponentColor={updateComponentColor}
+          resetComponentColor={resetComponentColor}
+          getCompColor={getCompColor}
+        />
+      </SectionPanel>
+
+      {/* ── Theme & Colors Section ── */}
+      <SectionPanel
+        title="Theme & Colors (Backgrounds, Accents & Text)"
         icon={<Palette className="w-4 h-4 text-violet-400" />}
         color="bg-violet-500/10 border border-violet-500/25"
-        defaultOpen={true}
       >
         {/* Preset Palettes */}
         <div>
           <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
-            Quick Preset Palettes
+            Quick Preset Palettes (Headings, Accents & Backgrounds)
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {[
               {
-                name: 'Gold & Emerald',
-                darkH: '#D4A853', darkA: '#34d399',
-                lightH: '#0f172a', lightA: '#059669',
+                name: 'Gold & Emerald (Midnight)',
+                darkH: '#D4A853', darkA: '#34d399', darkBgP: '#07101e', darkBgS: '#0c1a2e',
+                lightH: '#0f172a', lightA: '#059669', lightBgP: '#e8f4fd', lightBgS: '#dbeafe',
               },
               {
-                name: 'Cyber Cyan & Violet',
-                darkH: '#38bdf8', darkA: '#a855f7',
-                lightH: '#0369a1', lightA: '#7c3aed',
+                name: 'Cyber Cyan & Violet (Deep Space)',
+                darkH: '#38bdf8', darkA: '#a855f7', darkBgP: '#060b1e', darkBgS: '#110b29',
+                lightH: '#0369a1', lightA: '#7c3aed', lightBgP: '#f0f9ff', lightBgS: '#f5f3ff',
               },
               {
-                name: 'Royal Purple & Rose',
-                darkH: '#c084fc', darkA: '#f43f5e',
-                lightH: '#581c87', lightA: '#e11d48',
+                name: 'Royal Purple & Rose (Nebula)',
+                darkH: '#c084fc', darkA: '#f43f5e', darkBgP: '#0d081f', darkBgS: '#1a091d',
+                lightH: '#581c87', lightA: '#e11d48', lightBgP: '#faf5ff', lightBgS: '#fff1f2',
               },
               {
-                name: 'Amber & Pink',
-                darkH: '#f59e0b', darkA: '#ec4899',
-                lightH: '#c2410c', lightA: '#db2777',
+                name: 'Amber & Crimson (Solar Glow)',
+                darkH: '#f59e0b', darkA: '#ec4899', darkBgP: '#120a05', darkBgS: '#1f0c13',
+                lightH: '#c2410c', lightA: '#db2777', lightBgP: '#fffbeb', lightBgS: '#fdf2f8',
               },
               {
-                name: 'Teal & Indigo',
-                darkH: '#2dd4bf', darkA: '#818cf8',
-                lightH: '#0f766e', lightA: '#4338ca',
+                name: 'Obsidian & Matrix Teal',
+                darkH: '#2dd4bf', darkA: '#818cf8', darkBgP: '#041315', darkBgS: '#091d22',
+                lightH: '#0f766e', lightA: '#4338ca', lightBgP: '#f0fdfa', lightBgS: '#e0f2fe',
               },
               {
-                name: 'Deep Blue & Sky',
-                darkH: '#60a5fa', darkA: '#38bdf8',
-                lightH: '#1d4ed8', lightA: '#0284c7',
+                name: 'Pure Onyx & Steel Blue',
+                darkH: '#60a5fa', darkA: '#38bdf8', darkBgP: '#05070f', darkBgS: '#0d1326',
+                lightH: '#1d4ed8', lightA: '#0284c7', lightBgP: '#f8fafc', lightBgS: '#e2e8f0',
               },
             ].map((preset) => (
               <button
@@ -862,10 +1266,22 @@ export const AdminPortfolioEditor: React.FC = () => {
                     ...prev,
                     theme: {
                       ...prev.theme,
-                      dark: { headingColor: preset.darkH, accentColor: preset.darkA },
-                      light: { headingColor: preset.lightH, accentColor: preset.lightA },
+                      dark: {
+                        headingColor: preset.darkH,
+                        accentColor: preset.darkA,
+                        bgPrimary: preset.darkBgP,
+                        bgSecondary: preset.darkBgS,
+                      },
+                      light: {
+                        headingColor: preset.lightH,
+                        accentColor: preset.lightA,
+                        bgPrimary: preset.lightBgP,
+                        bgSecondary: preset.lightBgS,
+                      },
                       headingColor: preset.darkH,
                       accentColor: preset.darkA,
+                      bgPrimary: preset.darkBgP,
+                      bgSecondary: preset.darkBgS,
                     },
                   }));
                   setHasChanges(true);
@@ -874,9 +1290,10 @@ export const AdminPortfolioEditor: React.FC = () => {
                 className="p-2.5 rounded-xl border border-slate-700/80 bg-slate-800/60 hover:bg-slate-800 text-left transition-all hover:border-violet-500/50 cursor-pointer group"
               >
                 <div className="flex items-center gap-1.5 mb-1.5">
-                  <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: preset.darkH }} />
-                  <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: preset.darkA }} />
-                  <div className="w-3.5 h-3.5 rounded-full border border-slate-600" style={{ backgroundColor: preset.lightA }} />
+                  <div className="w-3.5 h-3.5 rounded-full border border-slate-600" style={{ backgroundColor: preset.darkBgP }} title="Dark Background" />
+                  <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: preset.darkH }} title="Dark Heading" />
+                  <div className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: preset.darkA }} title="Dark Accent" />
+                  <div className="w-3.5 h-3.5 rounded-full border border-slate-600" style={{ backgroundColor: preset.lightBgP }} title="Light Background" />
                 </div>
                 <span className="text-[11px] font-semibold text-slate-300 group-hover:text-white block truncate">
                   {preset.name}
@@ -925,11 +1342,11 @@ export const AdminPortfolioEditor: React.FC = () => {
 
         {/* Dark Mode Color Controls */}
         {(themeTab === 'both' || themeTab === 'dark') && (
-          <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60 space-y-3">
+          <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60 space-y-4">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-base">🌙</span>
               <h4 className="text-xs font-bold text-indigo-300 uppercase tracking-wider">
-                Dark Mode Colors
+                Dark Mode Colors & Background
               </h4>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -943,17 +1360,27 @@ export const AdminPortfolioEditor: React.FC = () => {
                 value={content.theme.dark?.accentColor || content.theme.accentColor || '#34d399'}
                 onChange={(v) => updateThemeColor('dark', 'accentColor', v)}
               />
+              <ColorPicker
+                label="Dark Primary Background"
+                value={content.theme.dark?.bgPrimary || content.theme.bgPrimary || '#07101e'}
+                onChange={(v) => updateThemeColor('dark', 'bgPrimary', v)}
+              />
+              <ColorPicker
+                label="Dark Secondary Background (Gradient End)"
+                value={content.theme.dark?.bgSecondary || content.theme.bgSecondary || '#0c1a2e'}
+                onChange={(v) => updateThemeColor('dark', 'bgSecondary', v)}
+              />
             </div>
           </div>
         )}
 
         {/* Light Mode Color Controls */}
         {(themeTab === 'both' || themeTab === 'light') && (
-          <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60 space-y-3">
+          <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/60 space-y-4">
             <div className="flex items-center gap-2 mb-1">
               <span className="text-base">☀️</span>
               <h4 className="text-xs font-bold text-amber-300 uppercase tracking-wider">
-                Light Mode Colors
+                Light Mode Colors & Background
               </h4>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -967,6 +1394,16 @@ export const AdminPortfolioEditor: React.FC = () => {
                 value={content.theme.light?.accentColor || '#0284c7'}
                 onChange={(v) => updateThemeColor('light', 'accentColor', v)}
               />
+              <ColorPicker
+                label="Light Primary Background"
+                value={content.theme.light?.bgPrimary || '#e8f4fd'}
+                onChange={(v) => updateThemeColor('light', 'bgPrimary', v)}
+              />
+              <ColorPicker
+                label="Light Secondary Background (Gradient End)"
+                value={content.theme.light?.bgSecondary || '#dbeafe'}
+                onChange={(v) => updateThemeColor('light', 'bgSecondary', v)}
+              />
             </div>
           </div>
         )}
@@ -974,17 +1411,22 @@ export const AdminPortfolioEditor: React.FC = () => {
         {/* Side-by-Side Live Theme Previews */}
         <div>
           <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-2">
-            Live Preview Comparison
+            Live Preview Comparison (Theme & Background Gradient)
           </label>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Dark Theme Simulation Card */}
-            <div className="p-4 rounded-xl border border-slate-800 bg-[#07101e] text-slate-200 shadow-xl">
-              <div className="flex items-center justify-between mb-3 border-b border-slate-800 pb-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <span>🌙</span> Dark Theme
+            <div
+              className="p-5 rounded-2xl border border-slate-700/80 text-slate-200 shadow-xl transition-all duration-500 overflow-hidden relative"
+              style={{
+                background: `linear-gradient(to bottom, ${content.theme.dark?.bgPrimary || content.theme.bgPrimary || '#07101e'}, ${content.theme.dark?.bgSecondary || content.theme.bgSecondary || '#0c1a2e'})`
+              }}
+            >
+              <div className="flex items-center justify-between mb-3 border-b border-white/10 pb-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-300 flex items-center gap-1.5 font-bold">
+                  <span>🌙</span> Dark Background & Theme
                 </span>
                 <span
-                  className="w-2.5 h-2.5 rounded-full"
+                  className="w-3 h-3 rounded-full shadow-sm"
                   style={{
                     backgroundColor:
                       content.theme.dark?.accentColor || content.theme.accentColor || '#34d399',
@@ -1000,12 +1442,12 @@ export const AdminPortfolioEditor: React.FC = () => {
               >
                 {content.about.heading || 'About Me'}
               </h3>
-              <p className="text-xs text-slate-400 mb-3">
+              <p className="text-xs text-slate-300 mb-3">
                 Full-Stack Developer & Creative Coder
               </p>
               <div className="flex items-center gap-2">
                 <span
-                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-900"
+                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-slate-900 shadow-sm"
                   style={{
                     backgroundColor:
                       content.theme.dark?.accentColor || content.theme.accentColor || '#34d399',
@@ -1026,13 +1468,18 @@ export const AdminPortfolioEditor: React.FC = () => {
             </div>
 
             {/* Light Theme Simulation Card */}
-            <div className="p-4 rounded-xl border border-sky-100 bg-[#f8fafc] text-slate-800 shadow-xl">
-              <div className="flex items-center justify-between mb-3 border-b border-slate-200 pb-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                  <span>☀️</span> Light Theme
+            <div
+              className="p-5 rounded-2xl border border-slate-300 text-slate-800 shadow-xl transition-all duration-500 overflow-hidden relative"
+              style={{
+                background: `linear-gradient(to bottom, ${content.theme.light?.bgPrimary || '#e8f4fd'}, ${content.theme.light?.bgSecondary || '#dbeafe'})`
+              }}
+            >
+              <div className="flex items-center justify-between mb-3 border-b border-slate-300/80 pb-2">
+                <span className="text-[10px] font-mono uppercase tracking-wider text-slate-600 flex items-center gap-1.5 font-bold">
+                  <span>☀️</span> Light Background & Theme
                 </span>
                 <span
-                  className="w-2.5 h-2.5 rounded-full"
+                  className="w-3 h-3 rounded-full shadow-sm"
                   style={{
                     backgroundColor: content.theme.light?.accentColor || '#0284c7',
                   }}
@@ -1051,7 +1498,7 @@ export const AdminPortfolioEditor: React.FC = () => {
               </p>
               <div className="flex items-center gap-2">
                 <span
-                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-white"
+                  className="px-2.5 py-1 rounded-md text-[11px] font-semibold text-white shadow-sm"
                   style={{
                     backgroundColor: content.theme.light?.accentColor || '#0284c7',
                   }}
@@ -1069,6 +1516,174 @@ export const AdminPortfolioEditor: React.FC = () => {
               </div>
             </div>
           </div>
+        </div>
+
+        {/* ── Component-Specific Colors & Backgrounds (Customize Any Component) ── */}
+        <div className="pt-5 border-t border-slate-800 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <div className="flex items-center gap-2">
+                <Layers className="w-4 h-4 text-cyan-400" />
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  Select Any Component & Customize Colors
+                </h4>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Customize individual backgrounds, text & accent colors for any component across the portfolio.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setCompThemeTab('dark')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  compThemeTab === 'dark'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-400 hover:text-white bg-slate-800/60'
+                }`}
+              >
+                🌙 Dark Mode
+              </button>
+              <button
+                type="button"
+                onClick={() => setCompThemeTab('light')}
+                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  compThemeTab === 'light'
+                    ? 'bg-amber-500 text-slate-900 shadow-sm'
+                    : 'text-slate-400 hover:text-white bg-slate-800/60'
+                }`}
+              >
+                ☀️ Light Mode
+              </button>
+            </div>
+          </div>
+
+          {/* Component Tabs Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+            {PORTFOLIO_COMPONENTS.map((comp) => {
+              const isSelected = selectedCompKey === comp.key;
+              const isCustom = Boolean(content.theme?.components?.[comp.key]);
+              return (
+                <button
+                  key={comp.key}
+                  type="button"
+                  onClick={() => setSelectedCompKey(comp.key)}
+                  className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer relative ${
+                    isSelected
+                      ? 'border-cyan-500 bg-cyan-500/10 shadow-md shadow-cyan-500/15'
+                      : 'border-slate-800 bg-slate-800/40 hover:bg-slate-800/80 hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-base">{comp.icon}</span>
+                    {isCustom ? (
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" title="Customized colors active" />
+                    ) : (
+                      <span className="w-1.5 h-1.5 rounded-full bg-slate-600" title="Using global theme defaults" />
+                    )}
+                  </div>
+                  <div className="text-xs font-bold text-white truncate">{comp.name}</div>
+                  <div className="text-[10px] text-slate-400 truncate">{isCustom ? 'Customized' : 'Theme Default'}</div>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Active Component Customizer Box */}
+          {(() => {
+            const activeComp = PORTFOLIO_COMPONENTS.find((c) => c.key === selectedCompKey) || PORTFOLIO_COMPONENTS[0];
+            const isCustom = Boolean(content.theme?.components?.[selectedCompKey]);
+
+            return (
+              <div className="p-4 rounded-xl border border-slate-800 bg-slate-900/80 space-y-4">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{activeComp.icon}</span>
+                    <div>
+                      <h5 className="text-xs font-bold text-white flex items-center gap-2">
+                        <span>{activeComp.name}</span>
+                        <span className={`px-2 py-0.5 rounded text-[10px] font-semibold ${
+                          isCustom
+                            ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                            : 'bg-slate-800 text-slate-400'
+                        }`}>
+                          {isCustom ? 'Custom Colors Active' : 'Inheriting Global Theme'}
+                        </span>
+                      </h5>
+                      <p className="text-[11px] text-slate-400">{activeComp.desc}</p>
+                    </div>
+                  </div>
+
+                  {isCustom && (
+                    <button
+                      type="button"
+                      onClick={() => resetComponentColor(selectedCompKey)}
+                      className="px-2.5 py-1 rounded-lg border border-rose-500/30 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <RotateCcw className="w-3.5 h-3.5" />
+                      <span>Reset to Global Theme</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Color Pickers for Selected Component */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                  <ColorPicker
+                    label={`${compThemeTab === 'dark' ? 'Dark' : 'Light'} Primary Background`}
+                    value={getCompColor(selectedCompKey, compThemeTab, 'bgPrimary')}
+                    onChange={(v) => updateComponentColor(selectedCompKey, compThemeTab, 'bgPrimary', v)}
+                  />
+                  <ColorPicker
+                    label={`${compThemeTab === 'dark' ? 'Dark' : 'Light'} Secondary Background`}
+                    value={getCompColor(selectedCompKey, compThemeTab, 'bgSecondary')}
+                    onChange={(v) => updateComponentColor(selectedCompKey, compThemeTab, 'bgSecondary', v)}
+                  />
+                  <ColorPicker
+                    label={`${compThemeTab === 'dark' ? 'Dark' : 'Light'} Heading / Text`}
+                    value={getCompColor(selectedCompKey, compThemeTab, 'headingColor')}
+                    onChange={(v) => updateComponentColor(selectedCompKey, compThemeTab, 'headingColor', v)}
+                  />
+                  <ColorPicker
+                    label={`${compThemeTab === 'dark' ? 'Dark' : 'Light'} Accent Color`}
+                    value={getCompColor(selectedCompKey, compThemeTab, 'accentColor')}
+                    onChange={(v) => updateComponentColor(selectedCompKey, compThemeTab, 'accentColor', v)}
+                  />
+                </div>
+
+                {/* Live Preview for Selected Component */}
+                <div
+                  className="p-4 rounded-xl border border-white/10 shadow-lg transition-all duration-300 relative overflow-hidden"
+                  style={{
+                    background: `linear-gradient(to bottom, ${getCompColor(selectedCompKey, compThemeTab, 'bgPrimary')}, ${getCompColor(selectedCompKey, compThemeTab, 'bgSecondary')})`
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span
+                      className="text-[11px] font-mono uppercase tracking-wider font-bold"
+                      style={{ color: getCompColor(selectedCompKey, compThemeTab, 'headingColor') }}
+                    >
+                      {activeComp.name} Preview ({compThemeTab === 'dark' ? '🌙 Dark' : '☀️ Light'})
+                    </span>
+                    <span
+                      className="px-2 py-0.5 rounded text-[10px] font-bold text-white shadow-sm"
+                      style={{ backgroundColor: getCompColor(selectedCompKey, compThemeTab, 'accentColor') }}
+                    >
+                      Accent Badge
+                    </span>
+                  </div>
+                  <h4
+                    className="text-base font-extrabold mb-1"
+                    style={{ color: getCompColor(selectedCompKey, compThemeTab, 'headingColor') }}
+                  >
+                    Customized {activeComp.name} Component
+                  </h4>
+                  <p className={`text-xs ${compThemeTab === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>
+                    Background gradient, typography, and accent badges respond live to your selection.
+                  </p>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </SectionPanel>
 
@@ -1091,6 +1706,15 @@ export const AdminPortfolioEditor: React.FC = () => {
             passion and precision.
           </p>
         </div>
+
+        <SectionColorControls
+          compKey="footer"
+          compName="Footer"
+          content={content}
+          updateComponentColor={updateComponentColor}
+          resetComponentColor={resetComponentColor}
+          getCompColor={getCompColor}
+        />
       </SectionPanel>
 
       {/* Floating Save Button (sticky at bottom when changes exist) */}

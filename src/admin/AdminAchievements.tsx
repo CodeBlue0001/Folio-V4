@@ -12,7 +12,8 @@ import {
   X,
   RotateCcw,
   Sparkles,
-  Calendar
+  Calendar,
+  Briefcase
 } from 'lucide-react';
 import {
   getAchievements,
@@ -276,7 +277,7 @@ export const AdminAchievements: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 overflow-x-auto pb-1 md:pb-0">
-          {(['all', 'certification', 'google', 'leetcode', 'badge', 'competition'] as const).map((cat) => (
+          {(['all', 'certification', 'internship', 'google', 'leetcode', 'badge', 'competition'] as const).map((cat) => (
             <button
               key={cat}
               onClick={() => setFilterCat(cat)}
@@ -308,7 +309,11 @@ export const AdminAchievements: React.FC = () => {
               >
                 <div className="flex items-start gap-3.5 min-w-0">
                   <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/25 flex items-center justify-center shrink-0 text-amber-400">
-                    <Award className="w-5 h-5" />
+                    {item.category === 'internship' || item.iconType === 'internship' ? (
+                      <Briefcase className="w-5 h-5 text-emerald-400" />
+                    ) : (
+                      <Award className="w-5 h-5" />
+                    )}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 flex-wrap mb-1">
@@ -316,7 +321,11 @@ export const AdminAchievements: React.FC = () => {
                       <span className="text-[10px] px-2 py-0.5 rounded-full border border-slate-700 bg-slate-800 text-slate-300">
                         {item.issuer}
                       </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full border border-amber-500/20 bg-amber-500/10 text-amber-400">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full border ${
+                        item.category === 'internship'
+                          ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-semibold'
+                          : 'border-amber-500/20 bg-amber-500/10 text-amber-400'
+                      }`}>
                         {item.category}
                       </span>
                       {item.level && (
@@ -464,10 +473,18 @@ export const AdminAchievements: React.FC = () => {
                     </label>
                     <select
                       value={formData.category}
-                      onChange={(e) => setFormData({ ...formData, category: e.target.value as BadgeCategory })}
+                      onChange={(e) => {
+                        const newCat = e.target.value as BadgeCategory;
+                        setFormData({
+                          ...formData,
+                          category: newCat,
+                          iconType: newCat === 'internship' && formData.iconType === 'trophy' ? 'internship' : formData.iconType,
+                        });
+                      }}
                       className="w-full px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-white text-xs outline-none"
                     >
                       <option value="certification">Certification</option>
+                      <option value="internship">Internship</option>
                       <option value="google">Google Cloud</option>
                       <option value="leetcode">LeetCode</option>
                       <option value="badge">Badge</option>
@@ -485,6 +502,7 @@ export const AdminAchievements: React.FC = () => {
                       className="w-full px-3 py-2 rounded-xl border border-slate-700 bg-slate-800 text-white text-xs outline-none"
                     >
                       <option value="trophy">Trophy</option>
+                      <option value="internship">Internship (Briefcase)</option>
                       <option value="badge">Badge</option>
                       <option value="google">Google</option>
                       <option value="leetcode">LeetCode</option>
@@ -514,16 +532,31 @@ export const AdminAchievements: React.FC = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                      Year / Date
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center justify-between">
+                      <span className="flex items-center gap-1.5">
+                        <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Date / Period *</span>
+                      </span>
+                      <span className="text-[10px] text-slate-400 font-normal">e.g. 2024 or Jun 2024 - Aug 2024</span>
                     </label>
-                    <input
-                      type="text"
-                      value={formData.date}
-                      onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                      placeholder="e.g. 2024"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-white text-sm outline-none"
-                    />
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formData.date}
+                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        placeholder="e.g. 2024, May 2024, or Jun 2024 - Aug 2024"
+                        className="w-full pl-3.5 pr-20 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-white text-sm outline-none focus:border-amber-500"
+                      />
+                      <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, date: new Date().getFullYear().toString() })}
+                          className="px-2 py-1 rounded-md text-[10px] font-semibold bg-slate-700 hover:bg-slate-600 text-slate-300 transition-colors cursor-pointer"
+                        >
+                          This Year
+                        </button>
+                      </div>
+                    </div>
                   </div>
 
                   <div>
@@ -554,16 +587,22 @@ export const AdminAchievements: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-1.5">
-                    Description
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                      Description / Overview
+                    </label>
+                    <span className="text-[10px] text-slate-400">Little description about the role or credential</span>
+                  </div>
                   <textarea
                     rows={3}
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    placeholder="Summary of skills mastered, validation criteria, and scope..."
-                    className="w-full px-3.5 py-2 rounded-xl border border-slate-700 bg-slate-800/80 text-white text-sm outline-none resize-none"
+                    placeholder="Provide a little description summarizing key tasks, skills learned, project impact, or validation criteria..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-700 bg-slate-800/80 text-white text-sm outline-none resize-none focus:border-amber-500 placeholder-slate-500"
                   />
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    This brief description will appear on the achievement card and detail modal.
+                  </p>
                 </div>
 
                 <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">

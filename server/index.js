@@ -780,6 +780,7 @@ app.get('/api/images/:id', async (req, res) => {
     }
     // High performance cache header: 24hr cache with background revalidation
     res.setHeader('Cache-Control', 'public, max-age=86400, stale-while-revalidate=604800');
+    res.setHeader('X-Storage-Source', 'MongoDB-GridFS-Chunks');
 
     stream.on('error', (err) => {
       console.error('[MongoDB GridFS] Stream error:', err);

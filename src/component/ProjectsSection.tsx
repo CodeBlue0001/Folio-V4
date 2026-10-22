@@ -32,7 +32,8 @@ const DEFAULT_GRADIENTS = [
 
 export const ProjectsSection = ({ isDark = true }: ProjectsSectionProps) => {
   const { content, getThemeColors } = usePortfolioContent();
-  const { headingColor } = getThemeColors(isDark);
+  const themeColors = getThemeColors(isDark, 'projects');
+  const { headingColor } = themeColors;
 
   const projVis = content.visibility?.projects;
   const showRepos = projVis ? projVis.showGithubRepos !== false : true;
@@ -99,11 +100,13 @@ export const ProjectsSection = ({ isDark = true }: ProjectsSectionProps) => {
   }, []);
 
   return (
-    <section id="projects" className={`relative min-h-screen py-12 sm:py-16 md:py-20 px-4 md:px-6 ${
-      isDark 
-        ? 'bg-gradient-to-b from-[#0c1a2e] to-[#07101e]' 
-        : 'bg-gradient-to-b from-[#dbeafe] to-[#e8f4fd]'
-    }`}>
+    <section
+      id="projects"
+      className="relative min-h-screen py-12 sm:py-16 md:py-20 px-4 md:px-6 transition-colors duration-700"
+      style={{
+        background: `linear-gradient(to bottom, ${themeColors.bgSecondary}, ${themeColors.bgPrimary})`
+      }}
+    >
       <div className="container mx-auto max-w-7xl">
         <motion.div
           initial={{ opacity: 0, y: 50 }}

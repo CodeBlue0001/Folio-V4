@@ -19,7 +19,10 @@ import {
   Zap,
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
+  Sun,
+  Moon,
+  Briefcase,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -31,8 +34,8 @@ import {
 } from '../data/achievementsData';
 import { LeetCodeSolvedCard } from './ui/LeetCodeSolvedCard';
 import { ArcReactorBackground } from './ArcReactorBackground';
-import { ThemeToggle } from './ThemeToggle';
 import { useTheme } from './hooks/useTheme';
+import { usePortfolioContent } from './hooks/usePortfolioContent';
 
 // ─── Animated Counter ──────────────────────────────────────────────────────────
 const AnimatedCounter = ({ value, duration = 1800 }: { value: number; duration?: number }) => {
@@ -68,6 +71,8 @@ const AnimatedCounter = ({ value, duration = 1800 }: { value: number; duration?:
 
 export const AllAchievementsPage = () => {
   const { isDark, toggle } = useTheme();
+  const { getThemeColors } = usePortfolioContent();
+  const themeColors = getThemeColors(isDark, 'achievements');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<BadgeCategory | 'all'>('all');
   const [activeModalBadge, setActiveModalBadge] = useState<Achievement | null>(null);
@@ -111,6 +116,7 @@ export const AllAchievementsPage = () => {
 
   const categories: { id: BadgeCategory | 'all'; label: string; icon: React.ReactNode }[] = [
     { id: 'all', label: 'All Badges', icon: <Layers className="w-4 h-4" /> },
+    { id: 'internship', label: 'Internships', icon: <Briefcase className="w-4 h-4 text-emerald-400" /> },
     { id: 'leetcode', label: 'LeetCode', icon: <Code2 className="w-4 h-4 text-amber-500" /> },
     { id: 'google', label: 'Google Skill Boost', icon: <Cloud className="w-4 h-4 text-blue-500" /> },
     { id: 'certification', label: 'Certifications', icon: <Trophy className="w-4 h-4 text-purple-500" /> },
@@ -184,6 +190,12 @@ export const AllAchievementsPage = () => {
             <ShieldCheck className="w-5 h-5 text-cyan-400" />
           </div>
         );
+      case 'internship':
+        return (
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <Briefcase className="w-5 h-5 text-emerald-400" />
+          </div>
+        );
       default:
         return (
           <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-400 shrink-0">
@@ -199,42 +211,76 @@ export const AllAchievementsPage = () => {
   };
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden">
+    <div
+      className="min-h-screen relative overflow-x-hidden transition-colors duration-700"
+      style={{
+        background: `linear-gradient(to bottom, ${themeColors.bgPrimary}, ${themeColors.bgSecondary})`
+      }}
+    >
       <div className="fixed inset-0 z-0">
         <ArcReactorBackground isDark={isDark} />
       </div>
-      <ThemeToggle isDark={isDark} toggle={toggle} />
 
       {/* Navigation */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b ${isDark ? 'bg-slate-950/80 border-slate-800/80 text-white' : 'bg-white/80 border-slate-200 text-slate-900'
+      <nav className={`fixed top-0 left-0 right-0 z-50 backdrop-blur-md border-b transition-colors duration-300 ${isDark ? 'bg-slate-950/85 border-slate-800/80 text-white' : 'bg-white/85 border-slate-200 text-slate-900'
         }`}>
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <Link to="/" className={`inline-flex items-center gap-2 font-semibold text-sm px-4 py-2 rounded-full border transition-all ${isDark ? 'border-slate-700 bg-slate-900/60 text-slate-300 hover:text-white hover:border-sky-500/50' : 'border-slate-200 bg-white/70 text-slate-700 hover:text-sky-800 hover:border-sky-300'
+        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-3.5 flex items-center justify-between">
+          <Link to="/" className={`inline-flex items-center gap-2 font-semibold text-xs sm:text-sm px-3.5 sm:px-4 py-2 rounded-full border transition-all shadow-sm ${isDark ? 'border-slate-700 bg-slate-900/70 text-slate-300 hover:text-white hover:border-sky-500/50 hover:bg-slate-800' : 'border-slate-200 bg-white text-slate-700 hover:text-sky-800 hover:border-sky-300 hover:bg-slate-50'
             }`}>
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Home</span>
           </Link>
-          <div className="flex items-center gap-2">
-            <Award className="w-5 h-5 text-amber-400" />
-            <span className="font-bold tracking-wide text-base">Achievements Vault</span>
+
+          <div className="flex items-center gap-2.5 sm:gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1.5 rounded-full border border-amber-500/20 bg-amber-500/10">
+              <Award className="w-4 h-4 text-amber-400 shrink-0" />
+              <span className="font-bold tracking-wide text-xs sm:text-sm text-amber-300 hidden sm:inline">Achievements Vault</span>
+            </div>
+
+            {/* Prominent, always visible Theme Toggle Button */}
+            <motion.button
+              onClick={toggle}
+              whileHover={{ scale: 1.08 }}
+              whileTap={{ scale: 0.95 }}
+              aria-label="Toggle theme"
+              className={`p-2 sm:p-2.5 rounded-full border transition-all shadow-md cursor-pointer flex items-center justify-center shrink-0 ${
+                isDark
+                  ? 'bg-slate-900/90 border-slate-700 text-amber-400 hover:bg-slate-800 hover:border-amber-400/60 hover:shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                  : 'bg-white border-slate-300 text-sky-700 hover:bg-slate-100 hover:border-sky-400 hover:shadow-[0_0_15px_rgba(56,189,248,0.25)]'
+              }`}
+            >
+              <motion.div
+                initial={false}
+                animate={{ rotate: isDark ? 0 : 180 }}
+                transition={{ duration: 0.3 }}
+              >
+                {isDark ? (
+                  <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-sky-700" />
+                )}
+              </motion.div>
+            </motion.button>
           </div>
         </div>
       </nav>
 
       {/* Main Content */}
-      <main className="relative z-10 pt-28 pb-20 container mx-auto px-6 max-w-6xl">
+      <main className="relative z-10 pt-20 sm:pt-24 pb-16 sm:pb-20 container mx-auto px-4 sm:px-6 max-w-6xl">
 
         {/* Hero Header */}
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center max-w-3xl mx-auto mb-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-4">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }} className="text-center max-w-3xl mx-auto mb-8 sm:mb-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-amber-500/30 bg-amber-500/10 text-amber-400 text-xs font-semibold uppercase tracking-wider mb-3">
             <Sparkles className="w-3.5 h-3.5" />
             <span>Live Stats & Verified Credentials</span>
           </div>
-          <h1 className={`text-4xl md:text-6xl font-extrabold mb-4 tracking-tight ${isDark ? 'text-[#D4A853]' : 'text-slate-800'
-            }`}>
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-3 tracking-tight transition-colors"
+            style={{ color: themeColors.headingColor }}
+          >
             All Achievements
           </h1>
-          <p className={`text-base md:text-lg ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+          <p className={`text-xs sm:text-sm md:text-base max-w-2xl mx-auto ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
             Complete repository of live LeetCode stats, Google Cloud badges, and verified certifications.
           </p>
         </motion.div>
@@ -245,20 +291,20 @@ export const AllAchievementsPage = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className={`rounded-3xl border p-6 md:p-8 mb-10 backdrop-blur-xl relative overflow-hidden ${isDark ? 'bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-800/40 border-slate-700/60' : 'bg-gradient-to-br from-white/90 to-slate-50/90 border-slate-200 shadow-xl'
+            className={`rounded-2xl sm:rounded-3xl border p-4 sm:p-6 md:p-8 mb-8 sm:mb-10 backdrop-blur-xl relative overflow-hidden ${isDark ? 'bg-gradient-to-br from-slate-900/80 via-slate-900/60 to-slate-800/40 border-slate-700/60' : 'bg-gradient-to-br from-white/90 to-slate-50/90 border-slate-200 shadow-xl'
               }`}
           >
             <div className="absolute -top-20 -right-20 w-40 h-40 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="flex items-center justify-between mb-6 relative z-10">
+            <div className="flex items-center justify-between mb-5 sm:mb-6 relative z-10">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 flex items-center justify-center">
-                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-6 h-6">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-amber-500 to-orange-600 text-white shadow-lg shadow-amber-500/20 flex items-center justify-center shrink-0">
+                  <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5 sm:w-6 sm:h-6">
                     <path d="M13.483 0a1.374 1.374 0 0 0-.961.438L7.116 6.226l-3.854 4.126a5.266 5.266 0 0 0-1.209 2.104 5.35 5.35 0 0 0-.125.513 5.527 5.527 0 0 0 .062 2.362 5.83 5.83 0 0 0 .349 1.017 5.938 5.938 0 0 0 1.271 1.818l4.277 4.193.039.038c2.248 2.165 5.852 2.133 8.063-.074l2.396-2.392c.54-.54.54-1.414.003-1.955a1.378 1.378 0 0 0-1.951-.003l-2.396 2.392a3.021 3.021 0 0 1-4.205.038l-.02-.019-4.276-4.193c-.652-.64-.972-1.469-.948-2.263a2.68 2.68 0 0 1 .066-.523 2.545 2.545 0 0 1 .619-1.164L9.13 8.114c1.058-1.134 3.204-1.27 4.43-.278l3.501 2.831c.593.48 1.461.387 1.94-.207a1.384 1.384 0 0 0-.207-1.943l-3.5-2.831c-.8-.647-1.766-1.045-2.774-1.202l2.015-2.158A1.384 1.384 0 0 0 13.483 0zm-2.866 12.815a1.38 1.38 0 0 0-1.38 1.382 1.38 1.38 0 0 0 1.38 1.382H20.79a1.38 1.38 0 0 0 1.38-1.382 1.38 1.38 0 0 0-1.38-1.382z" />
                   </svg>
                 </div>
                 <div>
-                  <h3 className={`text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>LeetCode Dashboard</h3>
+                  <h3 className={`text-lg sm:text-xl font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>LeetCode Dashboard</h3>
                   <p className={`text-xs flex items-center gap-1.5 ${isDark ? 'text-emerald-400' : 'text-teal-600'}`}>
                     <span className="relative flex h-2 w-2">
                       <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -277,12 +323,12 @@ export const AllAchievementsPage = () => {
                   <p className={`text-sm animate-pulse ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Syncing with LeetCode...</p>
                 </div>
               ) : lcData ? (
-                <div className="space-y-6">
+                <div className="space-y-5 sm:space-y-6">
                   {/* LeetCode Circular Solved Meter & Difficulty Breakdown */}
                   <LeetCodeSolvedCard stats={lcData.stats} isDark={isDark} />
 
-                  {/* Stats Grid (Side Row-Wise Layout) */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                  {/* Stats Grid (Side Row-Wise Layout, rescaled for all screens) */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 sm:gap-3">
                     {[
                       { label: 'Total Solved', value: lcData.stats.totalSolved, icon: <Code2 className="w-4 h-4" />, color: 'text-sky-400 bg-sky-500/10 border-sky-500/20' },
                       { label: 'Easy', value: lcData.stats.easySolved, icon: <CheckCircle className="w-4 h-4" />, color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' },
@@ -290,15 +336,15 @@ export const AllAchievementsPage = () => {
                       { label: 'Hard', value: lcData.stats.hardSolved, icon: <Zap className="w-4 h-4" />, color: 'text-red-400 bg-red-500/10 border-red-500/20' },
                       { label: 'Contest Rating', value: lcData.contest.contestRating, icon: <TrendingUp className="w-4 h-4" />, color: 'text-purple-400 bg-purple-500/10 border-purple-500/20' },
                     ].map((item) => (
-                      <div key={item.label} className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${isDark ? 'bg-slate-800/50 border-slate-700/50 hover:border-slate-600' : 'bg-white/60 border-slate-200 hover:border-slate-300'}`}>
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${item.color}`}>
+                      <div key={item.label} className={`flex items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-xl sm:rounded-2xl border transition-all ${isDark ? 'bg-slate-800/50 border-slate-700/50 hover:border-slate-600' : 'bg-white/60 border-slate-200 hover:border-slate-300'}`}>
+                        <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 border ${item.color}`}>
                           {item.icon}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className={`text-xl font-extrabold leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          <div className={`text-lg sm:text-xl font-extrabold leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
                             <AnimatedCounter value={item.value} />
                           </div>
-                          <div className={`text-xs font-medium truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{item.label}</div>
+                          <div className={`text-[11px] sm:text-xs font-medium truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{item.label}</div>
                         </div>
                       </div>
                     ))}
@@ -386,30 +432,30 @@ export const AllAchievementsPage = () => {
         )}
 
         {/* ─── Search & Category Filters ─────────────────────────────────── */}
-        <div className="max-w-6xl mx-auto mb-10 space-y-4">
+        <div className="max-w-6xl mx-auto mb-8 sm:mb-10 space-y-3 sm:space-y-4">
           <div className="relative">
-            <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
+            <Search className={`absolute left-3.5 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by title, issuer, or skills..."
-              className={`w-full pl-12 pr-10 py-3.5 rounded-2xl border backdrop-blur-md outline-none transition-all ${isDark ? 'bg-slate-900/80 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20' : 'bg-white/90 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
+              className={`w-full pl-10 sm:pl-12 pr-10 py-2.5 sm:py-3.5 text-xs sm:text-sm md:text-base rounded-xl sm:rounded-2xl border backdrop-blur-md outline-none transition-all ${isDark ? 'bg-slate-900/80 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20' : 'bg-white/90 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20'
                 }`}
             />
             {searchQuery && (
-              <button onClick={() => setSearchQuery('')} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
+              <button onClick={() => setSearchQuery('')} className="absolute right-3.5 sm:right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white">
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+          <div className="flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 pt-1 sm:pt-2">
             {categories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-medium text-sm transition-all border ${selectedCategory === cat.id
+                className={`inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all border ${selectedCategory === cat.id
                   ? isDark ? 'bg-amber-500/20 border-amber-500/60 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.2)]' : 'bg-amber-600 border-amber-600 text-white shadow-md'
                   : isDark ? 'bg-slate-900/60 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800/80' : 'bg-white/80 border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100'
                   }`}
@@ -422,15 +468,15 @@ export const AllAchievementsPage = () => {
         </div>
 
         {/* Results Counter */}
-        <div className="max-w-6xl mx-auto flex items-center justify-between mb-6 px-2">
-          <span className={`text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+        <div className="max-w-6xl mx-auto flex items-center justify-between mb-4 sm:mb-6 px-1 sm:px-2">
+          <span className={`text-[11px] sm:text-xs font-semibold uppercase tracking-wider ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
             Showing {filteredAchievements.length} of {achievements.length} Badges
           </span>
         </div>
 
         {/* ─── Achievement Cards ─────────────────────────────────────────── */}
         {filteredAchievements.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-5 md:gap-6 max-w-6xl mx-auto">
             {filteredAchievements.map((badge, idx) => (
               <motion.div
                 key={badge.id}
@@ -439,44 +485,45 @@ export const AllAchievementsPage = () => {
                 transition={{ duration: 0.4, delay: idx * 0.05 }}
                 whileHover={{ y: -6, scale: 1.02 }}
                 onClick={() => setActiveModalBadge(badge)}
-                className={`p-6 rounded-2xl border backdrop-blur-md flex flex-col justify-between cursor-pointer transition-all group ${isDark ? 'bg-slate-900/70 border-slate-800 hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]' : 'bg-white/90 border-slate-200 hover:border-sky-400 hover:shadow-xl'
+                className={`p-4 sm:p-5 md:p-6 rounded-2xl border backdrop-blur-md flex flex-col justify-between cursor-pointer transition-all group ${isDark ? 'bg-slate-900/70 border-slate-800 hover:border-cyan-500/50 hover:shadow-[0_0_30px_rgba(6,182,212,0.15)]' : 'bg-white/90 border-slate-200 hover:border-sky-400 hover:shadow-xl'
                   }`}
               >
                 <div>
-                  <div className="flex items-start justify-between gap-3 mb-4">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-start justify-between gap-3 mb-3 sm:mb-4">
+                    <div className="flex items-center gap-2.5 sm:gap-3">
                       {renderBadgeIcon(badge.iconType, badge.badgeImageUrl)}
                       <div>
-                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full border ${badge.category === 'leetcode' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                        <span className={`text-[10px] sm:text-xs font-semibold px-2 sm:px-2.5 py-0.5 rounded-full border ${badge.category === 'leetcode' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
                           badge.category === 'google' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                            'bg-purple-500/10 text-purple-400 border-purple-500/20'
+                            badge.category === 'internship' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                              'bg-purple-500/10 text-purple-400 border-purple-500/20'
                           }`}>
                           {badge.issuer}
                         </span>
-                        <h3 className={`text-lg font-bold mt-1 group-hover:text-cyan-400 transition-colors ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                        <h3 className={`text-base sm:text-lg font-bold mt-1 group-hover:text-cyan-400 transition-colors leading-snug ${isDark ? 'text-white' : 'text-slate-900'}`}>
                           {badge.title}
                         </h3>
                       </div>
                     </div>
                     {badge.date && (
-                      <span className={`text-xs flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                      <span className={`text-[11px] sm:text-xs flex items-center gap-1 shrink-0 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                         <Calendar className="w-3 h-3" />
                         {badge.date}
                       </span>
                     )}
                   </div>
-                  <p className={`text-sm mb-4 line-clamp-3 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{badge.description}</p>
+                  <p className={`text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{badge.description}</p>
                 </div>
 
                 <div>
-                  <div className="flex flex-wrap gap-1.5 mb-5">
+                  <div className="flex flex-wrap gap-1 sm:gap-1.5 mb-4 sm:mb-5">
                     {badge.skills.map((skill) => (
-                      <span key={skill} className={`text-xs px-2.5 py-1 rounded-md border ${isDark ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'}`}>
+                      <span key={skill} className={`text-[10px] sm:text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md border ${isDark ? 'bg-slate-800/80 border-slate-700 text-slate-300' : 'bg-slate-100 border-slate-200 text-slate-700'}`}>
                         {skill}
                       </span>
                     ))}
                   </div>
-                  <div className={`flex items-center justify-between pt-3 border-t ${isDark ? 'border-slate-800/50' : 'border-slate-200'}`}>
+                  <div className={`flex items-center justify-between pt-2.5 sm:pt-3 border-t ${isDark ? 'border-slate-800/50' : 'border-slate-200'}`}>
                     <span className="text-xs font-medium text-sky-400 group-hover:underline">Click to view details</span>
                     {badge.verificationUrl && (
                       <a href={badge.verificationUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}
@@ -505,53 +552,53 @@ export const AllAchievementsPage = () => {
       {/* ─── Detail Modal ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {activeModalBadge && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveModalBadge(null)} className="absolute inset-0 bg-black/70 backdrop-blur-sm" />
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveModalBadge(null)} className="absolute inset-0 bg-black/75 backdrop-blur-sm" />
             <motion.div
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`relative z-10 w-full max-w-lg rounded-3xl p-6 md:p-8 border shadow-2xl backdrop-blur-xl ${isDark ? 'bg-slate-900/95 border-slate-700 text-white' : 'bg-white/95 border-slate-300 text-slate-900'}`}
+              className={`relative z-10 w-full max-w-lg rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 border shadow-2xl backdrop-blur-xl ${isDark ? 'bg-slate-900/95 border-slate-700 text-white' : 'bg-white/95 border-slate-300 text-slate-900'}`}
             >
-              <button onClick={() => setActiveModalBadge(null)} className="absolute top-6 right-6 p-2 rounded-full border border-slate-700 hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
-                <X className="w-5 h-5" />
+              <button onClick={() => setActiveModalBadge(null)} className="absolute top-4 right-4 sm:top-6 sm:right-6 p-1.5 sm:p-2 rounded-full border border-slate-700 hover:bg-white/10 text-slate-400 hover:text-white transition-colors">
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
 
-              <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6 pr-8">
                 {renderBadgeIcon(activeModalBadge.iconType, activeModalBadge.badgeImageUrl)}
                 <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-amber-400">{activeModalBadge.issuer}</span>
-                  <h3 className="text-2xl font-bold">{activeModalBadge.title}</h3>
+                  <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-amber-400">{activeModalBadge.issuer}</span>
+                  <h3 className="text-lg sm:text-2xl font-bold leading-tight">{activeModalBadge.title}</h3>
                 </div>
               </div>
 
-              <div className="space-y-4 mb-6">
+              <div className="space-y-3 sm:space-y-4 mb-5 sm:mb-6">
                 <div>
-                  <h4 className={`text-xs font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Overview</h4>
-                  <p className={`text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{activeModalBadge.description}</p>
+                  <h4 className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Overview</h4>
+                  <p className={`text-xs sm:text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>{activeModalBadge.description}</p>
                 </div>
                 <div>
-                  <h4 className={`text-xs font-bold uppercase tracking-wider mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Skills</h4>
-                  <div className="flex flex-wrap gap-2">
+                  <h4 className={`text-[10px] sm:text-xs font-bold uppercase tracking-wider mb-1.5 sm:mb-2 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Skills</h4>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {activeModalBadge.skills.map((s) => (
-                      <span key={s} className={`text-xs px-3 py-1 rounded-lg border font-medium ${isDark ? 'bg-slate-800 border-slate-700 text-cyan-300' : 'bg-sky-50 border-sky-200 text-sky-800'}`}>{s}</span>
+                      <span key={s} className={`text-[10px] sm:text-xs px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-lg border font-medium ${isDark ? 'bg-slate-800 border-slate-700 text-cyan-300' : 'bg-sky-50 border-sky-200 text-sky-800'}`}>{s}</span>
                     ))}
                   </div>
                 </div>
                 {activeModalBadge.level && (
-                  <div className="flex items-center justify-between pt-2">
+                  <div className="flex items-center justify-between pt-1 sm:pt-2">
                     <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Proficiency Level</span>
-                    <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{activeModalBadge.level}</span>
+                    <span className="text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30">{activeModalBadge.level}</span>
                   </div>
                 )}
               </div>
 
               {activeModalBadge.verificationUrl && (
                 <a href={activeModalBadge.verificationUrl} target="_blank" rel="noopener noreferrer"
-                  className="w-full inline-flex items-center justify-center gap-2 py-3 px-6 rounded-xl font-bold bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg hover:shadow-amber-500/25 transition-all">
-                  <ShieldCheck className="w-5 h-5" />
+                  className="w-full inline-flex items-center justify-center gap-2 py-2.5 sm:py-3 px-4 sm:px-6 rounded-xl font-bold text-xs sm:text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-lg hover:shadow-amber-500/25 transition-all">
+                  <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
                   <span>Verify Credential</span>
-                  <ExternalLink className="w-4 h-4 ml-1" />
+                  <ExternalLink className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-1" />
                 </a>
               )}
             </motion.div>

@@ -18,7 +18,7 @@ interface ContactSectionProps {
 
 export const ContactSection = ({ isDark = true, userLocation, viewers, locationError }: ContactSectionProps) => {
   const { content, getThemeColors } = usePortfolioContent();
-  const themeColors = getThemeColors(isDark);
+  const themeColors = getThemeColors(isDark, 'contact');
   const headingColor = themeColors.headingColor;
 
   const contactVis = content.visibility?.contact;
@@ -53,10 +53,13 @@ export const ContactSection = ({ isDark = true, userLocation, viewers, locationE
   ];
 
   return (
-    <section id="contact" className={`relative min-h-screen py-12 sm:py-16 md:py-20 px-4 md:px-6 ${isDark
-      ? 'bg-gradient-to-b from-[#0c1a2e] to-[#07101e]'
-      : 'bg-gradient-to-b from-[#dbeafe] to-[#e8f4fd]'
-      }`}>
+    <section
+      id="contact"
+      className="relative min-h-screen py-12 sm:py-16 md:py-20 px-4 md:px-6 transition-colors duration-700"
+      style={{
+        background: `linear-gradient(to bottom, ${themeColors.bgSecondary}, ${themeColors.bgPrimary})`
+      }}
+    >
       <div className="container mx-auto max-w-5xl">
         <motion.div
           initial={{ opacity: 0, y: 50 }}

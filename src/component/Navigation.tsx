@@ -13,7 +13,8 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
   const [isOpen, setIsOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
   const mobileButtonRef = useRef<HTMLButtonElement>(null);
-  const { content } = usePortfolioContent();
+  const { content, getThemeColors } = usePortfolioContent();
+  const navColors = getThemeColors(isDark, 'navigation');
 
   // Close mobile menu on click outside
   useEffect(() => {
@@ -54,6 +55,10 @@ export const Navigation = ({ activeSection, scrollToSection, isDark = true }: Na
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
+        style={content.theme?.components?.navigation ? {
+          backgroundColor: `${navColors.bgPrimary}cc`,
+          borderColor: `${navColors.accentColor}40`,
+        } : undefined}
         className={`hidden md:flex fixed top-6 left-1/2 -translate-x-1/2 z-50 gap-2 backdrop-blur-md ${isDark
           ? 'bg-slate-900/60 border-slate-700/60 shadow-black/40'
           : 'bg-white/70 border-sky-200/80 shadow-sky-200/30'

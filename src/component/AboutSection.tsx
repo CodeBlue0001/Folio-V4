@@ -11,9 +11,10 @@ interface AboutSectionProps {
 export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
   const { content, getThemeColors } = usePortfolioContent();
   const [imageError, setImageError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
   const features: { icon: any; title: string; description: string }[] = [];
 
-  const themeColors = getThemeColors(isDark);
+  const themeColors = getThemeColors(isDark, 'about');
   const headingColor = themeColors.headingColor;
   const aboutVis = content.visibility?.about;
   const showParticles = aboutVis ? aboutVis.showFloatingParticles !== false : true;
@@ -24,19 +25,35 @@ export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
 
   useEffect(() => {
     setImageError(false);
+    setRetryCount(0);
   }, [content.about.profileImage]);
 
+  const handleImageError = () => {
+    if (retryCount < 2) {
+      setTimeout(() => {
+        setRetryCount((c) => c + 1);
+      }, 1200);
+    } else {
+      setImageError(true);
+    }
+  };
+
   return (
-    <section id="about" className={`relative min-h-screen flex items-center justify-center py-12 sm:py-16 md:py-20 px-4 md:px-6 overflow-hidden ${isDark
-      ? 'bg-gradient-to-b from-[#07101e] to-[#0c1a2e]'
-      : 'bg-gradient-to-b from-[#e8f4fd] to-[#dbeafe]'
-      }`}>
+    <section
+      id="about"
+      className="relative min-h-screen flex items-center justify-center py-12 sm:py-16 md:py-20 px-4 md:px-6 overflow-hidden transition-colors duration-700"
+      style={{
+        background: `linear-gradient(to bottom, ${themeColors.bgPrimary}, ${themeColors.bgSecondary})`
+      }}
+    >
       {/* Background elements */}
       <div className="absolute inset-0">
-        <div className={`absolute inset-0 ${isDark
-          ? 'bg-gradient-to-br from-[#07101e] via-emerald-950/20 to-[#07101e]'
-          : 'bg-gradient-to-br from-[#f0f9ff] via-sky-100/30 to-[#f0f9ff]'
-          }`} />
+        <div
+          className="absolute inset-0"
+          style={{
+            background: `radial-gradient(ellipse at top, ${themeColors.accentColor}15, transparent 70%)`
+          }}
+        />
 
         {/* 3D floating elements */}
         {showParticles && [...Array(8)].map((_, i) => (
@@ -161,10 +178,11 @@ export const AboutSection = ({ isDark = true }: AboutSectionProps) => {
                     <div className="relative aspect-square lg:aspect-[4/3] bg-slate-900/40">
                       {content.about.profileImage && !imageError ? (
                         <img
+                          key={`${content.about.profileImage}-${retryCount}`}
                           src={content.about.profileImage}
                           alt="Dipayan Sardar"
                           className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
-                          onError={() => setImageError(true)}
+                          onError={handleImageError}
                         />
                       ) : (
                         <div className={`w-full h-full flex items-center justify-center ${isDark ? 'bg-slate-800/50' : 'bg-slate-100'}`}>
